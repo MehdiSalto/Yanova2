@@ -1,0 +1,17 @@
+{
+  "name": "mern-ecommerce",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MERN E-Commerce Platform (YANOVA)",
+  "scripts": {
+    "server": "npm run dev --prefix backend",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "npm start --prefix backend",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

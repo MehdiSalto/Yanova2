@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  @apply bg-white text-black antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gold-500 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gold-600;
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply text-gold-500;
+  }
+
+  .btn-primary {
+    @apply px-7 py-3.5 bg-gold-500 text-black font-bold text-sm tracking-wide rounded-md
+           hover:bg-gold-400 transition-colors duration-200
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply px-7 py-3.5 bg-black text-white font-bold text-sm tracking-wide rounded-md
+           hover:bg-gray-900 transition-colors duration-200 border border-black
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-gray-600 font-medium rounded-md
+           hover:text-black hover:bg-gray-50 transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-white border border-gray-200 rounded-md
+           text-black placeholder-gray-400
+           focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20
+           transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+}
+
+/* Light "card" surface — used on white sections (storefront) */
+@layer utilities {
+  .glass {
+    @apply bg-white border border-gray-200 shadow-sm rounded-xl;
+  }
+  .glass-strong {
+    @apply bg-white border border-gray-200 shadow-md rounded-2xl;
+  }
+}
+
+/* Dark "panel" surface — used on black sections (hero, testimonials, footer, admin) */
+@layer utilities {
+  .panel-dark {
+    @apply bg-dark-950 border border-white/10 rounded-2xl;
+  }
+}
+
+@layer components {
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .eyebrow {
+    @apply text-gold-500 text-xs font-bold tracking-[0.2em] uppercase mb-3;
+  }
+
+  .section-title {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-black text-center mb-4;
+  }
+
+  .section-subtitle {
+    @apply text-base sm:text-lg text-gray-500 text-center max-w-2xl mx-auto mb-12;
+  }
+}
