@@ -22,24 +22,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-refresh access token once on 401
-api.interceptors.response.use(
-  (res) => res,
-  async (error) => {
-    const original = error.config;
-    if (error.response?.status === 401 && !original._retry && !original.url.includes('/auth/')) {
-      original._retry = true;
-      try {
-        await api.post('/auth/refresh');
-        return api(original);
-      } catch (refreshError) {
-        return Promise.reject(refreshError);
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   logout: () => api.post('/auth/logout'),
