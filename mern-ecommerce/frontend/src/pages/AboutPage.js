@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { settingsAPI } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { FiEdit2, FiSave, FiX } from 'react-icons/fi';
+import { FiSave, FiX } from 'react-icons/fi';
 
 const AboutPage = () => {
-  const { admin } = useAuth();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -113,11 +111,6 @@ const AboutPage = () => {
                       {settings.aboutUs?.contactInfo || 'No contact information available yet.'}
                     </p>
                   </div>
-                  {admin && (
-                    <button onClick={() => setIsEditing(true)} className="btn-secondary flex items-center gap-2">
-                      <FiEdit2 className="w-5 h-5" /> Edit Story
-                    </button>
-                  )}
                 </div>
               )}
             </div>
