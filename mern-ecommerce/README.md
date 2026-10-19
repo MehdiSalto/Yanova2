@@ -1,5 +1,7 @@
 # YANOVA — storefront and administration
 
+For the independent Cloudflare frontends, see [CLOUDFLARE.md](CLOUDFLARE.md).
+
 Version 1.1.0 restores the complete editable source and aligns the storefront,
 admin panel and Express API. Products and offers link to an external seller.
 There is no cart, checkout, payment processing or order management.
