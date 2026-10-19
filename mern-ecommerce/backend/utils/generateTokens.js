@@ -1,29 +1,17 @@
 const jwt = require('jsonwebtoken');
-
-const TOKEN_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '24h';
-const TOKEN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-
-const generateAccessToken = (admin) =>
-  jwt.sign({ id: admin._id, role: admin.role }, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: TOKEN_EXPIRES,
-  });
-
 const cookieOptions = () => ({
   httpOnly: true,
   secure: process.env.COOKIE_SECURE === 'true',
-  sameSite: 'lax',
+  sameSite: process.env.COOKIE_SAME_SITE || 'lax',
   path: '/',
 });
-
-const setAuthCookie = (res, accessToken) => {
-  res.cookie('accessToken', accessToken, {
-    ...cookieOptions(),
-    maxAge: TOKEN_MAX_AGE_MS,
-  });
+const generateAccessToken = (admin) => jwt.sign(
+  { id: String(admin._id), role: admin.role, sv: admin.sessionVersion || 0 }, process.env.JWT_ACCESS_SECRET,
+  { algorithm: 'HS256', expiresIn: process.env.JWT_ACCESS_EXPIRES || '8h' }
+);
+const setAuthCookie = (res, token) => {
+  const { exp } = jwt.decode(token);
+  res.cookie('accessToken', token, { ...cookieOptions(), maxAge: Math.max(0, exp * 1000 - Date.now()) });
 };
-
-const clearAuthCookie = (res) => {
-  res.clearCookie('accessToken', cookieOptions());
-};
-
-module.exports = { generateAccessToken, setAuthCookie, clearAuthCookie };
+const clearAuthCookie = (res) => res.clearCookie('accessToken', cookieOptions());
+module.exports = { generateAccessToken, setAuthCookie, clearAuthCookie, cookieOptions };

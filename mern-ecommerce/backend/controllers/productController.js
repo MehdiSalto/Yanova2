@@ -1,50 +1,46 @@
 const Product = require('../models/Product');
 const Click = require('../models/Click');
-
+const { list, search, pick } = require('../utils/pagination');
+const httpError = require('../utils/httpError');
+const { notifyAdmins } = require('../utils/events');
+const fields = ['name','description','price','discount','imageUrl','gallery','buyLink','category','featured','status','stock','colors','sizes'];
 const getProducts = async (req, res) => {
-  const isAdmin = !!req.admin;
-  const filter = isAdmin ? {} : { status: 'published' };
-  const products = await Product.find(filter).sort({ createdAt: -1 });
-  res.json(products);
+  const filter = req.management ? {} : { status: 'published' };
+  const term = search(req.query.search);
+  if (term) filter.$or = [{ name: term }, { description: term }];
+  if (typeof req.query.category === 'string' && req.query.category) filter.category = req.query.category.slice(0,80);
+  if (req.management && ['draft','published'].includes(req.query.status)) filter.status = req.query.status;
+  if (req.query.featured === 'true') filter.featured = true;
+  res.json(await list(Product, filter, req.query));
 };
-
 const getProduct = async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (!product) return res.status(404).json({ message: 'Product not found' });
+  const product = await Product.findOne({ _id: req.params.id, ...(!req.management ? { status: 'published' } : {}) });
+  if (!product) throw httpError(404, 'Product not found.');
   res.json(product);
 };
-
 const createProduct = async (req, res) => {
-  const product = await Product.create(req.body);
+  const product = await Product.create(pick(req.body, fields));
+  notifyAdmins(req, 'analytics:update', { type: 'catalog' });
   res.status(201).json(product);
 };
-
 const updateProduct = async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!product) return res.status(404).json({ message: 'Product not found' });
+  const product = await Product.findByIdAndUpdate(req.params.id, { $set: pick(req.body, fields) }, { new: true, runValidators: true });
+  if (!product) throw httpError(404, 'Product not found.');
+  notifyAdmins(req, 'analytics:update', { type: 'catalog' });
   res.json(product);
 };
-
 const deleteProduct = async (req, res) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
-  if (!product) return res.status(404).json({ message: 'Product not found' });
-  res.json({ message: 'Product deleted' });
+  if (!await Product.findByIdAndDelete(req.params.id)) throw httpError(404, 'Product not found.');
+  notifyAdmins(req, 'analytics:update', { type: 'catalog' }); res.json({ message: 'Product deleted.' });
 };
-
 const registerClick = async (req, res) => {
-  const product = await Product.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { clickCount: 1 } },
-    { new: true }
-  );
-  if (!product) return res.status(404).json({ message: 'Product not found' });
-  await Click.create({ type: 'product_click', refId: product._id, device: req.body.device });
-  const io = req.app.get('io');
-  io?.emit('analytics:update', { type: 'product_click', productId: product._id });
-  res.json({ clickCount: product.clickCount });
+  if (req.admin) return res.status(204).end();
+  const product = await Product.findOne({ _id: req.params.id, status: 'published' });
+  if (!product) throw httpError(404, 'Product not found.');
+  try { await Click.create({ type: 'product_click', refId: product._id, device: req.body.device, sessionId: req.body.sessionId, eventId: req.body.eventId }); }
+  catch (error) { if (error.code === 11000) return res.json({ clickCount: product.clickCount, duplicate: true }); throw error; }
+  const updated = await Product.findByIdAndUpdate(product._id, { $inc: { clickCount: 1 } }, { new: true });
+  notifyAdmins(req, 'analytics:update', { type: 'product_click' });
+  res.json({ clickCount: updated?.clickCount || product.clickCount + 1 });
 };
-
 module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, registerClick };

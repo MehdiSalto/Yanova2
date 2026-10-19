@@ -1,80 +1,49 @@
+import { trackingInfo } from './tracking';
 import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-});
-
-// Attach CSRF token to mutating requests
-let csrfToken = null;
+const API_ROOT = (process.env.REACT_APP_API_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
+const options = { baseURL: `${API_ROOT}/api`, withCredentials: true };
+const api = axios.create(options);
+const tokenClient = axios.create(options);
+let token = null;
+let tokenRequest = null;
+export const clearCsrfToken = () => { token = null; tokenRequest = null; };
 export const fetchCsrfToken = async () => {
-  const { data } = await api.get('/csrf-token');
-  csrfToken = data.csrfToken;
-  return csrfToken;
+  if (token) return token;
+  if (!tokenRequest) tokenRequest = tokenClient.get('/csrf-token').then(({ data }) => { token = data.csrfToken; return token; }).finally(() => { tokenRequest = null; });
+  return tokenRequest;
 };
-
-api.interceptors.request.use((config) => {
-  if (['post', 'put', 'patch', 'delete'].includes(config.method) && csrfToken) {
-    config.headers['CSRF-Token'] = csrfToken;
-  }
+api.interceptors.request.use(async (config) => {
+  if (['post','put','patch','delete'].includes(config.method)) config.headers['X-CSRF-Token'] = await fetchCsrfToken();
   return config;
 });
-
+api.interceptors.response.use(response => response, async (error) => {
+  const request = error.config;
+  if (request && error.response?.data?.code === 'INVALID_CSRF' && !request._csrfRetry) {
+    request._csrfRetry = true; clearCsrfToken(); return api(request);
+  }
+  if (error.response?.status === 401 && !request?.url?.includes('/auth/')) {
+    clearCsrfToken(); window.dispatchEvent(new Event('yanova:session-expired'));
+  }
+  return Promise.reject(error);
+});
+export const mediaUrl = value => value?.startsWith('/uploads/') ? `${API_ROOT}${value}` : value;
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  logout: () => api.post('/auth/logout'),
   me: () => api.get('/auth/me'),
+  login: async (email, password) => { const result = await api.post('/auth/login', { email, password }); clearCsrfToken(); return result; },
+  logout: async () => { const result = await api.post('/auth/logout'); clearCsrfToken(); return result; },
 };
-
 export const productAPI = {
-  getAll: () => api.get('/products'),
-  getOne: (id) => api.get(`/products/${id}`),
-  create: (data) => api.post('/products', data),
-  update: (id, data) => api.put(`/products/${id}`, data),
-  delete: (id) => api.delete(`/products/${id}`),
-  click: (id, device) => api.post(`/products/${id}/click`, { device }),
+  getAll: (params, config = {}) => api.get('/products', { ...config, params }), getOne: id => api.get(`/products/${id}`),
+  click: (id, device) => api.post(`/products/${id}/click`, { ...trackingInfo(), device }),
 };
-
 export const offerAPI = {
-  getAll: () => api.get('/offers'),
-  create: (data) => api.post('/offers', data),
-  update: (id, data) => api.put(`/offers/${id}`, data),
-  delete: (id) => api.delete(`/offers/${id}`),
+  getAll: (params, config = {}) => api.get('/offers', { ...config, params }),
+  click: id => api.post(`/offers/${id}/click`, trackingInfo()),
 };
-
-export const bannerAPI = {
-  getAll: () => api.get('/banners'),
-  create: (data) => api.post('/banners', data),
-  update: (id, data) => api.put(`/banners/${id}`, data),
-  delete: (id) => api.delete(`/banners/${id}`),
-};
-
-export const contactAPI = {
-  submit: (data) => api.post('/contacts', data),
-  getAll: () => api.get('/contacts'),
-  markAsRead: (id) => api.patch(`/contacts/${id}/read`),
-  delete: (id) => api.delete(`/contacts/${id}`),
-};
-
+export const bannerAPI = { getAll: config => api.get('/banners', { ...config, params: { limit: 100 } }) };
+export const contactAPI = { submit: data => api.post('/contacts', data) };
 export const settingsAPI = {
-  get: () => api.get('/settings'),
-  updateAbout: (data) => api.put('/settings/about', data),
-  updatePolicies: (data) => api.put('/settings/policies', data),
+  get: config => api.get('/settings', config), updateAbout: data => api.put('/settings/about', data), updatePolicies: data => api.put('/settings/policies', data),
 };
-
-export const dashboardAPI = {
-  getStats: () => api.get('/dashboard/stats'),
-};
-
-export const clickAPI = {
-  registerVisit: (device, path) => api.post('/clicks/visit', { device, path }),
-};
-
-export const uploadAPI = {
-  upload: (formData) =>
-    api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-};
-
+export const clickAPI = { registerVisit: (device, path, eventId) => api.post('/clicks/visit', { ...trackingInfo(), device, path, eventId }) };
 export default api;

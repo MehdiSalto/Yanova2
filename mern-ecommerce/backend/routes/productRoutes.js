@@ -1,31 +1,19 @@
 const express = require('express');
-const { body } = require('express-validator');
-const {
-  getProducts,
-  getProduct,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  registerClick,
-} = require('../controllers/productController');
-const { protect } = require('../middleware/auth');
-const validate = require('../middleware/validate');
-
+const c = require('../controllers/productController');
+const { protect, requireRole, optionalAuth } = require('../middleware/auth');
+const { trackingLimiter } = require('../middleware/security');
+const v = require('../middleware/validators');
+const wrap = require('../utils/asyncHandler');
+const { csrfProtection } = require('../middleware/csrf');
 const router = express.Router();
-
-const productValidation = [
-  body('name').notEmpty().withMessage('Name is required'),
-  body('description').notEmpty().withMessage('Description is required'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
-  body('imageUrl').notEmpty().withMessage('Image URL is required'),
-  body('buyLink').notEmpty().withMessage('Buy link is required'),
-];
-
-router.get('/', getProducts);
-router.get('/:id', getProduct);
-router.post('/:id/click', registerClick);
-router.post('/', protect, productValidation, validate, createProduct);
-router.put('/:id', protect, productValidation, validate, updateProduct);
-router.delete('/:id', protect, deleteProduct);
-
+const admin = [protect, requireRole('admin','superadmin'), csrfProtection];
+const manage = (req, res, next) => { req.management = true; next(); };
+router.get('/manage', ...admin, manage, wrap(c.getProducts));
+router.get('/manage/:id', ...admin, manage, v.id, wrap(c.getProduct));
+router.get('/:id', v.id, wrap(c.getProduct));
+router.get('/', wrap(c.getProducts));
+router.post('/:id/click', v.id, trackingLimiter, csrfProtection, optionalAuth, v.tracking, wrap(c.registerClick));
+router.post('/', ...admin, v.product, wrap(c.createProduct));
+router.put('/:id', ...admin, v.id, v.product, wrap(c.updateProduct));
+router.delete('/:id', ...admin, v.id, wrap(c.deleteProduct));
 module.exports = router;

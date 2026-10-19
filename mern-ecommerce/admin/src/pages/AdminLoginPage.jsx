@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const AdminLoginPage = () => {
-  const { admin, login } = useAuth();
+  const { admin, login, connectionError } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -40,18 +40,19 @@ const AdminLoginPage = () => {
           <p className="text-dark-400 mt-2">Admin Panel Sign In</p>
         </div>
 
-        {error && (
+        {(error || connectionError) && (
           <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
-            {error}
+            {error || connectionError}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-dark-300 mb-2">Email</label>
+            <label htmlFor="admin-email" className="block text-sm text-dark-300 mb-2">Email</label>
             <div className="relative">
               <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400 w-5 h-5" />
               <input
+                id="admin-email"
                 type="email"
                 required
                 value={form.email}
@@ -63,10 +64,11 @@ const AdminLoginPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm text-dark-300 mb-2">Password</label>
+            <label htmlFor="admin-password" className="block text-sm text-dark-300 mb-2">Password</label>
             <div className="relative">
               <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400 w-5 h-5" />
               <input
+                id="admin-password"
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={form.password}

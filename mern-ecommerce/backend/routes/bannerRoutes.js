@@ -1,16 +1,16 @@
 const express = require('express');
-const { body } = require('express-validator');
-const { getBanners, createBanner, updateBanner, deleteBanner } = require('../controllers/bannerController');
-const { protect } = require('../middleware/auth');
-const validate = require('../middleware/validate');
-
+const c = require('../controllers/bannerController');
+const { protect, requireRole, optionalAuth } = require('../middleware/auth');
+const { trackingLimiter } = require('../middleware/security');
+const v = require('../middleware/validators');
+const wrap = require('../utils/asyncHandler');
+const { csrfProtection } = require('../middleware/csrf');
 const router = express.Router();
-
-const bannerValidation = [body('title').notEmpty(), body('imageUrl').notEmpty()];
-
-router.get('/', getBanners);
-router.post('/', protect, bannerValidation, validate, createBanner);
-router.put('/:id', protect, bannerValidation, validate, updateBanner);
-router.delete('/:id', protect, deleteBanner);
-
+const admin = [protect, requireRole('admin','superadmin'), csrfProtection];
+const manage = (req, res, next) => { req.management = true; next(); };
+router.get('/manage', ...admin, manage, wrap(c.getBanners));
+router.get('/', wrap(c.getBanners));
+router.post('/', ...admin, v.banner, wrap(c.createBanner));
+router.put('/:id', ...admin, v.id, v.banner, wrap(c.updateBanner));
+router.delete('/:id', ...admin, v.id, wrap(c.deleteBanner));
 module.exports = router;

@@ -1,26 +1,17 @@
 const express = require('express');
 const { body } = require('express-validator');
-const {
-  submitContact,
-  getContacts,
-  markAsRead,
-  deleteContact,
-} = require('../controllers/contactController');
-const { protect } = require('../middleware/auth');
+const c = require('../controllers/contactController');
+const { protect, requireRole } = require('../middleware/auth');
+const { csrfProtection } = require('../middleware/csrf');
+const { contactLimiter } = require('../middleware/security');
+const v = require('../middleware/validators');
 const validate = require('../middleware/validate');
-
+const wrap = require('../utils/asyncHandler');
 const router = express.Router();
-
-const contactValidation = [
-  body('fullName').trim().isLength({ min: 2 }).withMessage('Full name is required'),
-  body('email').isEmail().withMessage('Valid email required'),
-  body('subject').trim().isLength({ min: 5 }).withMessage('Subject too short'),
-  body('message').trim().isLength({ min: 10 }).withMessage('Message too short'),
-];
-
-router.post('/', contactValidation, validate, submitContact);
-router.get('/', protect, getContacts);
-router.patch('/:id/read', protect, markAsRead);
-router.delete('/:id', protect, deleteContact);
-
+const admin = [protect, requireRole('admin','superadmin'), csrfProtection];
+router.post('/', contactLimiter, csrfProtection, [v.text('fullName',2,200), body('email').isString().bail().trim().isEmail().isLength({ max: 254 }), v.text('subject',5,300), v.text('message',10,10000)], validate, wrap(c.submitContact));
+router.get('/', ...admin, wrap(c.getContacts));
+router.patch('/:id/read', ...admin, v.id, wrap(c.markAsRead));
+router.patch('/:id/status', ...admin, v.id, body('status').isIn(['new','read','replied']), validate, wrap(c.updateStatus));
+router.delete('/:id', ...admin, v.id, wrap(c.deleteContact));
 module.exports = router;

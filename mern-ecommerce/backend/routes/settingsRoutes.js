@@ -1,11 +1,15 @@
 const express = require('express');
-const { getSettings, updateAbout, updatePolicies } = require('../controllers/settingsController');
-const { protect } = require('../middleware/auth');
-
+const { body } = require('express-validator');
+const c = require('../controllers/settingsController');
+const { protect, requireRole } = require('../middleware/auth');
+const { csrfProtection } = require('../middleware/csrf');
+const { text } = require('../middleware/validators');
+const validate = require('../middleware/validate');
+const wrap = require('../utils/asyncHandler');
 const router = express.Router();
-
-router.get('/', getSettings);
-router.put('/about', protect, updateAbout);
-router.put('/policies', protect, updatePolicies);
-
+const admin = [protect, requireRole('admin','superadmin'), csrfProtection];
+router.get('/', wrap(c.getSettings));
+router.put('/about', ...admin, body('aboutUs').isObject({ strict: true }), ...['companyStory','mission','vision','contactInfo'].map(key=>text(`aboutUs.${key}`,0,30000,true)), validate, wrap(c.updateAbout));
+router.put('/policies', ...admin, body('policies').isObject({ strict: true }), ...['privacyPolicy','refundPolicy','shippingPolicy','termsConditions'].map(key=>text(`policies.${key}`,0,100000,true)), validate, wrap(c.updatePolicies));
+router.put('/site', ...admin, body('siteInfo').isObject({ strict: true }), text('siteInfo.siteName',1,80,true), text('siteInfo.tagline',0,200,true), body('siteInfo.supportEmail').optional({ checkFalsy: true }).isEmail().isLength({ max: 254 }), validate, wrap(c.updateSite));
 module.exports = router;

@@ -1,20 +1,14 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { login, logout, me } = require('../controllers/authController');
+const c = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
+const { csrfProtection } = require('../middleware/csrf');
 const { authLimiter } = require('../middleware/security');
 const validate = require('../middleware/validate');
-
+const wrap = require('../utils/asyncHandler');
 const router = express.Router();
-
-router.post(
-  '/login',
-  authLimiter,
-  [body('email').isEmail().withMessage('Valid email required'), body('password').notEmpty()],
-  validate,
-  login
-);
-router.post('/logout', logout);
-router.get('/me', protect, me);
-
+router.post('/login', authLimiter, csrfProtection, [body('email').isString().bail().trim().isEmail().isLength({ max: 254 }), body('password').isString().bail().isLength({ min: 1, max: 1024 })], validate, wrap(c.login));
+router.post('/logout', csrfProtection, wrap(c.logout));
+router.get('/me', protect, wrap(c.me));
+router.post('/password', protect, authLimiter, csrfProtection, [body('currentPassword').isString().bail().isLength({ min: 1, max: 1024 }), body('newPassword').isString().bail().isLength({ min: 12, max: 128 }).not().equals('Admin@123456')], validate, wrap(c.changePassword));
 module.exports = router;

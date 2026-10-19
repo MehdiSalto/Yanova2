@@ -1,0 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const root = path.join(__dirname,'..');
+const file = path.join(root,'backend','.env');
+let text = fs.existsSync(file) ? fs.readFileSync(file,'utf8') : fs.readFileSync(file+'.example','utf8');
+const read = key => text.match(new RegExp(`^${key}=(.*)$`,'m'))?.[1]?.trim().replace(/^["']|["']$/g,'') || '';
+const set = (key,value) => { const line = `${key}=${value}`; const pattern = new RegExp(`^${key}=.*$`,'m'); text = pattern.test(text) ? text.replace(pattern,line) : text+'\n'+line+'\n'; };
+if (read('JWT_ACCESS_SECRET').length < 32 || /changeme|replace|example/i.test(read('JWT_ACCESS_SECRET'))) set('JWT_ACCESS_SECRET',crypto.randomBytes(48).toString('hex'));
+if (!read('DEFAULT_ADMIN_EMAIL')) set('DEFAULT_ADMIN_EMAIL','admin@example.com');
+if (read('DEFAULT_ADMIN_PASSWORD').length < 12 || read('DEFAULT_ADMIN_PASSWORD') === 'Admin@123456') set('DEFAULT_ADMIN_PASSWORD',crypto.randomBytes(20).toString('base64url'));
+fs.writeFileSync(file,text,{mode:0o600}); fs.chmodSync(file,0o600);
+console.log('Private backend/.env prepared. Review MONGO_URI and DEFAULT_ADMIN_EMAIL. Read your initial password from that file; values are never printed here.');
+console.log('Existing database users keep their passwords. Use Settings → Change password after signing in to rotate an existing password.');

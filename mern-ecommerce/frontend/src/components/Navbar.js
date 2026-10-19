@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useSite } from '../context/SiteContext';
 import { Link, useLocation } from 'react-router-dom';
-import { FiMenu, FiX, FiSearch, FiUser, FiShoppingCart } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch, FiUser } from 'react-icons/fi';
 
 const navLinks = [
   { path: '/', label: 'HOME' },
@@ -12,6 +13,9 @@ const navLinks = [
 
 const Navbar = () => {
   const location = useLocation();
+  const { settings } = useSite();
+  const siteName = settings?.siteInfo?.siteName || 'YANOVA';
+  const adminUrl = process.env.REACT_APP_ADMIN_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5174/admin/login' : '/admin/login');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -20,24 +24,16 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Announcement bar */}
-      <div className="bg-black text-white text-[11px] sm:text-xs tracking-wide">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-6 sm:gap-10 overflow-x-auto whitespace-nowrap">
-          <span>FREE SHIPPING ON ALL ORDERS OVER $50</span>
-          <span className="hidden sm:inline">30-DAY EASY RETURNS</span>
-          <span className="hidden md:inline">1-YEAR WARRANTY</span>
-          <span className="hidden lg:inline">24/7 CUSTOMER SUPPORT</span>
-        </div>
-      </div>
+      <div className="bg-black text-white text-xs text-center px-4 py-2">EXPLORE THE COLLECTION · DISCOVER THE LATEST OFFERS</div>
 
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between" aria-label="Main navigation">
           <Link to="/" className="flex flex-col leading-none" aria-label="YANOVA Home">
             <span className="font-black text-2xl tracking-tight text-black">
-              YAN<span className="text-gold-500">OVA</span>
+              {siteName}
             </span>
             <span className="text-[10px] text-gray-400 tracking-wide mt-0.5 hidden sm:block">
-              Smart Technology. Better Living.
+              {settings?.siteInfo?.tagline || 'Smart Technology. Better Living.'}
             </span>
           </Link>
 
@@ -59,18 +55,12 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-5 text-black">
-            <button aria-label="Search" className="hidden sm:block hover:text-gold-500 transition-colors">
+            <Link to="/products" aria-label="Search" className="hidden sm:block hover:text-gold-500 transition-colors">
               <FiSearch className="w-5 h-5" />
-            </button>
-            <Link to="/admin/login" aria-label="Admin login" className="hover:text-gold-500 transition-colors">
-              <FiUser className="w-5 h-5" />
             </Link>
-            <button aria-label="Cart" className="relative hover:text-gold-500 transition-colors">
-              <FiShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                0
-              </span>
-            </button>
+            <a href={adminUrl} aria-label="Admin login" className="hover:text-gold-500 transition-colors">
+              <FiUser className="w-5 h-5" />
+            </a>
             <button
               className="md:hidden p-1 text-black"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

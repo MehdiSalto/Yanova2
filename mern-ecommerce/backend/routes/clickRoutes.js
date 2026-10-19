@@ -1,8 +1,12 @@
 const express = require('express');
+const { body } = require('express-validator');
 const { registerVisit } = require('../controllers/clickController');
-
+const { optionalAuth } = require('../middleware/auth');
+const { csrfProtection } = require('../middleware/csrf');
+const { trackingLimiter } = require('../middleware/security');
+const v = require('../middleware/validators');
+const validate = require('../middleware/validate');
+const wrap = require('../utils/asyncHandler');
 const router = express.Router();
-
-router.post('/visit', registerVisit);
-
+router.post('/visit', trackingLimiter, csrfProtection, optionalAuth, body('path').isString().bail().matches(/^\/(?!\/)/).isLength({ max: 1024 }), v.tracking, validate, wrap(registerVisit));
 module.exports = router;

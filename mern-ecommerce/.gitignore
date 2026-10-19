@@ -1,0 +1,12 @@
+node_modules/
+build/
+dist/
+.env
+.env.*
+!.env.example
+*.env
+*.log
+backend/uploads/*
+!backend/uploads/.gitkeep
+coverage/
+.DS_Store

@@ -1,141 +1,180 @@
-# YANOVA — MERN E-Commerce Platform
+# YANOVA — storefront and administration
 
-A complete, production-ready e-commerce platform built with the MERN stack (MongoDB, Express, React, Node.js), styled to match the YANOVA black/gold brand identity.
+Version 1.1.0 restores the complete editable source and aligns the storefront,
+admin panel and Express API. Products and offers link to an external seller.
+There is no cart, checkout, payment processing or order management.
 
-## Features
+See [RUN_AR.md](RUN_AR.md) for setup in Darija and
+[IMPLEMENTATION.md](IMPLEMENTATION.md) for repairs and verification limits.
 
-- Fully responsive UI (desktop, tablet, mobile) using Tailwind CSS
-- Admin dashboard with role-based authentication (JWT, httpOnly cookies, refresh token rotation)
-- Secure password hashing with bcrypt
-- CRUD for products, offers, banners, contact requests, and site settings
-- Real-time analytics powered by Socket.IO (live visitor count, click tracking)
-- Image upload handling with Multer
-- Input validation with express-validator
-- Security hardening: Helmet, CORS, rate limiting, CSRF protection, MongoDB sanitization
-- Bold black/white/gold storefront UI with Framer Motion animations
-- Dark admin dashboard
-- SEO-friendly meta tags via react-helmet-async
-- Toast notifications via react-toastify
+## Local setup
 
-## Tech Stack
+Requirements: Node.js 20.19 or later, npm, and a reachable MongoDB instance.
+Run from `mern-ecommerce/`:
 
-**Backend:** Node.js, Express, MongoDB (Mongoose), Socket.IO, JWT, bcryptjs, Multer, Helmet, CORS, express-rate-limit, csurf, express-validator, express-mongo-sanitize
-
-**Frontend:** React, React Router, Axios, Tailwind CSS, Framer Motion, React Icons, React Toastify, Socket.IO client
-
-## Project Structure
-
-```
-mern-ecommerce/
-├─ backend/
-│  ├─ config/          # DB connection
-│  ├─ controllers/     # Business logic
-│  ├─ middleware/      # Auth, security, validation, upload
-│  ├─ models/          # Mongoose schemas
-│  ├─ routes/          # API endpoints
-│  ├─ utils/           # JWT helpers, admin seeding
-│  ├─ uploads/         # Uploaded images
-│  └─ server.js        # Entry point
-├─ frontend/
-│  ├─ public/
-│  └─ src/
-│     ├─ components/   # Navbar, Footer, ProductCard, Toast, Loading, etc.
-│     ├─ pages/        # Storefront pages + admin/ subfolder
-│     ├─ context/      # AuthContext, SocketContext
-│     ├─ layouts/       # MainLayout, AdminLayout
-│     ├─ services/      # api.js (Axios), socket.js
-│     ├─ App.js
-│     ├─ index.css
-│     └─ index.js
-├─ .env / .env.example
-├─ package.json         # Root scripts (concurrently runs client & server)
-└─ README.md
-```
-
-## Getting Started
-
-### 1. Install dependencies
-
-```bash
+```sh
 npm run install:all
+npm run setup
 ```
 
-This installs root dev tools plus backend and frontend dependencies.
+The installer uses all four lockfiles. Setup creates `backend/.env`, generates
+a random JWT secret and unique initial password, and preserves an existing
+strong configuration. Secrets are never printed. Edit `backend/.env` to set
+`MONGO_URI` and `DEFAULT_ADMIN_EMAIL`; read the initial password there. The root
+`.env.example` is only a pointer: the server loads `backend/.env`.
 
-### 2. Configure environment variables
+Start MongoDB, then:
 
-Copy `.env.example` to `.env` at the root (already done for you) and update:
-- `MONGO_URI` — your MongoDB connection string
-- `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` — replace with strong random strings
-- `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD` — seeded automatically on first boot if no admin exists
-
-Also check `frontend/.env` for `REACT_APP_API_URL` and `REACT_APP_SOCKET_URL`.
-
-### 3. Start MongoDB
-
-Make sure a local or remote MongoDB instance is running and reachable via `MONGO_URI`.
-
-### 4. Run the development servers
-
-```bash
+```sh
 npm run dev
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5000/api
+| Component | Development URL |
+| --- | --- |
+| Storefront | http://localhost:3000 |
+| Administration | http://localhost:5174/admin/login |
+| API | http://localhost:5000/api |
 
-On first boot, a default admin account is seeded using `DEFAULT_ADMIN_EMAIL` / `DEFAULT_ADMIN_PASSWORD`. Log in at `/admin/login`.
+Both development servers default to loopback. Both frontends proxy `/api`, `/uploads` and `/socket.io` to port
+5000. Leave frontend/admin API environment variables blank for this setup.
+The Navbar's admin link uses the dedicated admin development server.
 
-### 5. Build for production
+An initial admin is created only when the database has no admin. Existing
+accounts keep their passwords. Use **Settings → Change password** after login
+to rotate an existing password. There is no password recovery/email service.
 
-```bash
+## Build and hosting
+
+```sh
 npm run build
-NODE_ENV=production npm start
+npm start
 ```
 
-The Express server serves the compiled React build from `frontend/build`.
+Before starting production, configure `backend/.env`:
 
-## Scripts
+| Variable | Purpose |
+| --- | --- |
+| `NODE_ENV=production` | Serve both compiled frontends |
+| `COOKIE_SECURE=true` | Required in production; serve through HTTPS |
+| `COOKIE_SAME_SITE=lax` | Default same-origin installation |
+| `CLIENT_URLS` | Exact browser origins, comma separated, no paths/trailing slashes |
+| `MONGO_URI` | Database connection URI |
+| `JWT_ACCESS_SECRET` | Private random secret generated by setup |
+| `JWT_ACCESS_EXPIRES=8h` | Session lifetime; cookie expiry follows the JWT |
+| `PORT=5000` | Internal Node HTTP port |
+| `TRUST_PROXY_HOPS=0` | Actual number of trusted reverse-proxy hops |
+| `UPLOAD_DIR` | Absolute path on a persistent writable volume |
 
-| Script | Description |
-|---|---|
-| `dev` | Runs backend (nodemon) and frontend (react-scripts) concurrently |
-| `server` | Starts the backend only |
-| `client` | Starts the React dev server only |
-| `build` | Builds the React app for production |
-| `start` | Starts the production server (serves static React build) |
-| `install:all` | Installs root, backend, and frontend dependencies |
+Put an HTTPS reverse proxy in front of Node and forward WebSocket upgrades.
+One process serves the store at `/`, admin at `/admin/`, API at `/api`, and
+images at `/uploads`. Back up MongoDB and the upload volume together. API and
+upload 404s stay JSON rather than falling through to React.
 
-## API Overview
+Build both frontends before starting production from this Git repository. The
+ZIP delivery also includes compiled frontends. Rebuild after source or frontend
+environment changes. For split hosting, configure the frontend/admin `.env.example`
+settings before building, set backend `API_PUBLIC_URL`, and allow the exact
+client origins. Cross-site cookies require `COOKIE_SAME_SITE=none`, HTTPS and
+`COOKIE_SECURE=true`; browser third-party cookie policies may still block them.
+Same-origin packaging was tested; the target hosting environment was not.
 
-| Route | Description |
-|---|---|
-| `POST /api/auth/login` | Admin login (rate-limited) |
-| `POST /api/auth/refresh` | Rotate access/refresh tokens |
-| `POST /api/auth/logout` | Clear session |
-| `GET /api/products` | List products (public sees published only) |
-| `POST /api/products/:id/click` | Track a buy-now click |
-| `GET /api/offers` | List offers |
-| `GET /api/banners` | List banners |
-| `POST /api/contacts` | Submit a contact form |
-| `GET /api/settings` | Get About Us / Policies content |
-| `GET /api/dashboard/stats` | Admin analytics (protected) |
-| `POST /api/upload` | Upload an image (protected) |
+## Project map
 
-All admin-only routes require a valid `accessToken` httpOnly cookie.
+| Location | Responsibility |
+| --- | --- |
+| `backend/server.js` | Environment, database, initial admin and HTTP/Socket startup |
+| `backend/app.js` | Express factory, middleware, routes and static serving |
+| `backend/models/` | Admin, Product, Offer, Banner, Contact, Settings and Click schemas |
+| `backend/controllers/` | Publication rules, CRUD, settings and dashboard metrics |
+| `backend/middleware/` | Authentication, roles, CSRF, validation, uploads and errors |
+| `backend/socket.js` | Private admin events and anonymous visitor presence |
+| `backend/test/` | HTTP, Mongoose and socket regression scenarios |
+| `frontend/src/` | React storefront, public content and visit/click tracking |
+| `admin/src/` | Vite/React management UI, authentication, forms and dashboard |
+| `scripts/` | Install, configuration and dual-frontend build commands |
 
-## Security Notes
+## API contracts
 
-- JWT access + refresh tokens are stored in httpOnly cookies; refresh tokens are hashed and rotated on each use.
-- Helmet sets secure HTTP headers; CORS is restricted to `CLIENT_URL`.
-- Rate limiting protects the login endpoint from brute-force attempts.
-- CSRF protection via `csurf` — the frontend fetches a token from `/api/csrf-token` before mutating requests.
-- All user input is validated server-side with `express-validator` and sanitized against NoSQL injection.
+Lists return `{ items, pagination: { page, limit, total, pages } }`. Page size
+is capped at 100. Both included clients use this contract; external clients
+expecting raw arrays or older field names need updating.
 
-## Design System
+| Route | Behavior |
+| --- | --- |
+| `GET /api/csrf-token` | Issue a session-bound CSRF token; never cache |
+| `POST /api/auth/login`, `/logout` | Sign in/out with HttpOnly cookies |
+| `GET /api/auth/me` | Current authenticated admin |
+| `POST /api/auth/password` | Verify current password, change it and revoke older sessions |
+| `GET /api/products`, `/offers`, `/banners` | Public published/active content |
+| `GET /api/products/manage`, `/offers/manage`, `/banners/manage` | Protected lists including drafts/inactive records |
+| `POST /api/{products,offers,banners}` | Protected creation |
+| `PUT`, `DELETE /api/{products,offers,banners}/:id` | Protected update/deletion |
+| `POST /api/products/:id/click`, `/offers/:id/click` | External purchase-link clicks |
+| `POST /api/contacts` | Store a message and notify authenticated admins |
+| `GET /api/contacts` | Protected paginated messages |
+| `PATCH /api/contacts/:id/read`, `/:id/status` | Protected status updates |
+| `GET /api/settings` | Site identity, About content and policies |
+| `PUT /api/settings/site`, `/about`, `/policies` | Protected section-specific saves |
+| `GET /api/dashboard/stats` | Protected visit/click/session/device/contact counts |
+| `POST /api/upload` | Protected multipart upload, field name `image` |
+| `POST /api/clicks/visit` | Deduplicated page-view event |
+| `GET /api/health` | Readiness; 503 when MongoDB is disconnected |
 
-The storefront uses a bold black / white / gold visual identity (see `frontend/tailwind.config.js` and `frontend/src/index.css` for the full palette and utility classes: `btn-primary`, `btn-secondary`, `glass`, `glass-strong`, `eyebrow`). The admin dashboard keeps a dark panel theme for focus and contrast.
+Mutating requests need a CSRF cookie and `X-CSRF-Token`. The supplied clients
+fetch tokens automatically and retry once on expiry. Admin sessions use one
+expiring JWT. There is no refresh-token endpoint. A 401 clears admin state and
+returns the user to sign-in; password changes invalidate older sessions.
 
-## Contributing
+## Content and measurement
 
-Feel free to open issues or submit pull requests. Follow the existing code style.
+- Products use `imageUrl`, `gallery`, `buyLink` and draft/published status.
+  Optional stock, colors and sizes persist. Stock does not reserve inventory
+  or block external purchases.
+- Offers use `imageUrl`, `offerLink`, `discountPercentage`, `ctaText`, optional
+  display code, status and start/expiry dates. Codes are for the external seller;
+  there is no coupon redemption engine here.
+- Banners use `imageUrl`, `linkUrl`, `position`, `active` and `order`.
+- Contacts use `fullName`, `subject` and new/read/replied status. **Replied is a
+  manual label** and does not send an email. Received means stored in MongoDB.
+- Uploads are decoded and re-encoded to static WebP, max 5 MiB and 20 megapixels.
+  Animation is not retained. Replacing/deleting records does not automatically
+  delete old upload files; plan retention and backups.
+- Analytics count page views, external-link clicks and browser-tab sessions.
+  Event IDs prevent duplicate events; authenticated admin browsing is excluded.
+  These are not sales, revenue or conversion measurements.
+- Presence/rate-limit state is local to one process. Multiple instances need a
+  shared Socket.IO adapter and shared presence/rate-limit storage.
+
+## Verification and launch checks
+
+```sh
+npm test
+npm run build
+# Optional on a compatible machine:
+npm run test:integration --prefix backend
+```
+
+The 14 default backend scenarios run real Express/Mongoose logic with a native
+collection storage fixture. This does not verify MongoDB indexes, storage or
+network behavior. The optional suite uses a temporary MongoDB process and may
+download a binary. It was attempted here but the environment rejected an
+`open` operation. No production database was used.
+
+Chromium review uses both compiled UIs over HTTPS, real routes, image decoding
+and the same collection fixture; external images/fonts/seller pages are isolated.
+See `IMPLEMENTATION.md` for scope and remaining work.
+
+Before launch, verify real MongoDB/indexes, existing records, HTTPS cookies,
+proxy/WebSocket behavior, permanent uploads and backups on the target host.
+Set final-domain canonical metadata and sitemap, and review business/policy
+content. Basic robots rules and admin noindex are included; SEO is incomplete.
+
+Runtime-only audits (`npm audit --omit=dev`) report zero findings for all three
+applications as of 19 October 2026. The older CRA/Vite/Tailwind build and dev
+chains still have advisory findings and need a separate migration. This work
+does not claim a clean full dependency audit. Production uses the compiled
+files, and development servers should stay local. See `IMPLEMENTATION.md`.
+
+The archive excludes private `.env`, credentials, dependencies and Git history.
+Old exposed credentials were not revoked remotely. Rotate database credentials
+and any shared account password in their owning systems before reusing them.

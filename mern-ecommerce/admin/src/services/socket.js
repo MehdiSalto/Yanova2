@@ -1,10 +1,4 @@
 import { io } from 'socket.io-client';
-
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-const socket = io(SOCKET_URL, {
-  withCredentials: true,
-  autoConnect: true,
-});
-
+const url = (import.meta.env.VITE_API_URL || window.location.origin).replace(/\/api\/?$/, '').replace(/\/$/, '');
+const socket = io(url, { withCredentials: true, autoConnect: false, auth: { role: 'admin' } });
 export default socket;

@@ -1,30 +1,16 @@
 const Banner = require('../models/Banner');
-
+const { list, pick } = require('../utils/pagination');
+const httpError = require('../utils/httpError');
+const fields = ['title','imageUrl','linkUrl','position','active','order'];
 const getBanners = async (req, res) => {
-  const isAdmin = !!req.admin;
-  const filter = isAdmin ? {} : { active: true };
-  const banners = await Banner.find(filter).sort({ order: 1, createdAt: -1 });
-  res.json(banners);
+  const filter = req.management ? {} : { active: true };
+  if (['hero','top','middle','footer'].includes(req.query.position)) filter.position = req.query.position;
+  res.json(await list(Banner, filter, req.query, { order: 1, createdAt: -1 }));
 };
-
-const createBanner = async (req, res) => {
-  const banner = await Banner.create(req.body);
-  res.status(201).json(banner);
-};
-
+const createBanner = async (req, res) => res.status(201).json(await Banner.create(pick(req.body, fields)));
 const updateBanner = async (req, res) => {
-  const banner = await Banner.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!banner) return res.status(404).json({ message: 'Banner not found' });
-  res.json(banner);
+  const banner = await Banner.findByIdAndUpdate(req.params.id, { $set: pick(req.body, fields) }, { new: true, runValidators: true });
+  if (!banner) throw httpError(404, 'Banner not found.'); res.json(banner);
 };
-
-const deleteBanner = async (req, res) => {
-  const banner = await Banner.findByIdAndDelete(req.params.id);
-  if (!banner) return res.status(404).json({ message: 'Banner not found' });
-  res.json({ message: 'Banner deleted' });
-};
-
+const deleteBanner = async (req, res) => { if (!await Banner.findByIdAndDelete(req.params.id)) throw httpError(404, 'Banner not found.'); res.json({ message: 'Banner deleted.' }); };
 module.exports = { getBanners, createBanner, updateBanner, deleteBanner };

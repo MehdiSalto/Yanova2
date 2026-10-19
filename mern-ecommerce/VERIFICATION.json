@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-19",
+  "version": "1.1.0",
+  "backend": {
+    "command": "npm test",
+    "passed": 14,
+    "failed": 0,
+    "database": "Mongoose native collection fixture, not a real MongoDB server"
+  },
+  "build": {
+    "command": "npm run build",
+    "storefront": "passed",
+    "admin": "passed"
+  },
+  "browser": {
+    "scope": "Real Chromium → compiled UI → actual Express/Mongoose logic; MongoDB native collection fixture; no production credentials",
+    "results": [
+      {
+        "name": "Admin login at /admin/login with real HTTPS cookies",
+        "result": "passed"
+      },
+      {
+        "name": "Create draft product with a real image upload",
+        "result": "passed"
+      },
+      {
+        "name": "Publish product, render catalog, track live visitor and real purchase-link click",
+        "result": "passed"
+      },
+      {
+        "name": "Create a published offer using matching API fields",
+        "result": "passed"
+      },
+      {
+        "name": "Create a hero banner and render it on the storefront",
+        "result": "passed"
+      },
+      {
+        "name": "Edit site identity, company story and shipping policy",
+        "result": "passed"
+      },
+      {
+        "name": "Send a contact message and mark it read in admin",
+        "result": "passed"
+      },
+      {
+        "name": "Mobile admin and storefront render without horizontal page overflow",
+        "result": "passed"
+      },
+      {
+        "name": "Logout clears HTTP access and no React exceptions occurred",
+        "result": "passed"
+      }
+    ],
+    "reactExceptions": []
+  },
+  "runtime_dependency_audit": {
+    "command": "npm audit --omit=dev",
+    "results": {
+      "backend": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "frontend": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "admin": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    }
+  },
+  "limits": [
+    "Real MongoDB engine/index/network integration remains unverified.",
+    "Temporary MongoDB binary could not start in this environment (open: Operation not permitted).",
+    "Legacy CRA/Vite/Tailwind development/build dependencies still have advisory findings.",
+    "Target hosting, HTTPS proxy, persistence and backups remain unverified.",
+    "No real credentials, production database or deployment were used."
+  ]
+}

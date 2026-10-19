@@ -1,22 +1,17 @@
 const express = require('express');
-const { body } = require('express-validator');
-const { getOffers, createOffer, updateOffer, deleteOffer } = require('../controllers/offerController');
-const { protect } = require('../middleware/auth');
-const validate = require('../middleware/validate');
-
+const c = require('../controllers/offerController');
+const { protect, requireRole, optionalAuth } = require('../middleware/auth');
+const { trackingLimiter } = require('../middleware/security');
+const v = require('../middleware/validators');
+const wrap = require('../utils/asyncHandler');
+const { csrfProtection } = require('../middleware/csrf');
 const router = express.Router();
-
-const offerValidation = [
-  body('title').notEmpty(),
-  body('description').notEmpty(),
-  body('imageUrl').notEmpty(),
-  body('discountPercentage').isFloat({ min: 0, max: 100 }),
-  body('offerLink').notEmpty(),
-];
-
-router.get('/', getOffers);
-router.post('/', protect, offerValidation, validate, createOffer);
-router.put('/:id', protect, offerValidation, validate, updateOffer);
-router.delete('/:id', protect, deleteOffer);
-
+const admin = [protect, requireRole('admin','superadmin'), csrfProtection];
+const manage = (req, res, next) => { req.management = true; next(); };
+router.get('/manage', ...admin, manage, wrap(c.getOffers));
+router.get('/', wrap(c.getOffers));
+router.post('/:id/click', v.id, trackingLimiter, csrfProtection, optionalAuth, v.tracking, wrap(c.registerClick));
+router.post('/', ...admin, v.offer, wrap(c.createOffer));
+router.put('/:id', ...admin, v.id, v.offer, wrap(c.updateOffer));
+router.delete('/:id', ...admin, v.id, wrap(c.deleteOffer));
 module.exports = router;

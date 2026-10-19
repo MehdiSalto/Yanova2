@@ -29,4 +29,12 @@ const me = async (req, res) => {
   res.json({ admin: { id: req.admin._id, email: req.admin.email, role: req.admin.role } });
 };
 
-module.exports = { login, logout, me };
+const changePassword = async (req, res) => {
+  const admin = await Admin.findById(req.admin._id).select('+password');
+  if (!admin || !await admin.comparePassword(req.body.currentPassword)) return res.status(400).json({ message: 'Current password is incorrect.' });
+  if (req.body.currentPassword === req.body.newPassword) return res.status(400).json({ message: 'Choose a different password.' });
+  admin.password = req.body.newPassword; admin.sessionVersion = (admin.sessionVersion || 0) + 1;
+  await admin.save(); setAuthCookie(res, generateAccessToken(admin));
+  res.json({ admin: { id: admin._id, email: admin.email, role: admin.role }, message: 'Password changed. Other sessions have been signed out.' });
+};
+module.exports = { login, logout, me, changePassword };

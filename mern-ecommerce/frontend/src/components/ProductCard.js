@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { FiExternalLink, FiShoppingCart } from 'react-icons/fi';
-import { productAPI } from '../services/api';
+import { productAPI, mediaUrl } from '../services/api';
 
 const getDevice = () => {
   const w = window.innerWidth;
@@ -29,7 +29,7 @@ const ProductCard = ({ product }) => {
     >
       <div className="relative aspect-square overflow-hidden bg-gray-50">
         <img
-          src={product.imageUrl}
+          src={mediaUrl(product.imageUrl)}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
