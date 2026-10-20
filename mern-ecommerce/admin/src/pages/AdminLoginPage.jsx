@@ -1,3 +1,4 @@
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -35,8 +36,9 @@ const AdminLoginPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md glass-strong p-8"
       >
+        <div className="flex justify-end mb-4"><ThemeToggle /></div>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-gold-400">YANOVA</h1>
+          <h1 className="text-3xl font-black text-gold-400">YANOBEN</h1>
           <p className="text-dark-400 mt-2">Admin Panel Sign In</p>
         </div>
 
@@ -58,7 +60,7 @@ const AdminLoginPage = () => {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="input-field pl-10"
-                placeholder="admin@yanova.com"
+                placeholder="admin@yanoben.com"
               />
             </div>
           </div>

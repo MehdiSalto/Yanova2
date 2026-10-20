@@ -21,7 +21,7 @@ api.interceptors.response.use(response => response, async (error) => {
     request._csrfRetry = true; clearCsrfToken(); return api(request);
   }
   if (error.response?.status === 401 && !request?.url?.includes('/auth/')) {
-    clearCsrfToken(); window.dispatchEvent(new Event('yanova:session-expired'));
+    clearCsrfToken(); window.dispatchEvent(new Event('yanoben:session-expired'));
   }
   return Promise.reject(error);
 });

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSite } from '../context/SiteContext';
 import { Link, useLocation } from 'react-router-dom';
-import { FiMenu, FiX, FiSearch, FiUser } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch } from 'react-icons/fi';
+import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
   { path: '/', label: 'HOME' },
@@ -14,8 +15,7 @@ const navLinks = [
 const Navbar = () => {
   const location = useLocation();
   const { settings } = useSite();
-  const siteName = settings?.siteInfo?.siteName || 'YANOVA';
-  const adminUrl = process.env.REACT_APP_ADMIN_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5174/admin/login' : '/admin/login');
+  const siteName = settings?.siteInfo?.siteName || 'YANOBEN';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -26,10 +26,10 @@ const Navbar = () => {
     <>
       <div className="bg-black text-white text-xs text-center px-4 py-2">EXPLORE THE COLLECTION · DISCOVER THE LATEST OFFERS</div>
 
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between" aria-label="Main navigation">
-          <Link to="/" className="flex flex-col leading-none" aria-label="YANOVA Home">
-            <span className="font-black text-2xl tracking-tight text-black">
+      <header className="bg-surface border-b border-line sticky top-0 z-40">
+        <nav className="store-nav max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between" aria-label="Main navigation">
+          <Link to="/" className="flex flex-col leading-none" aria-label="YANOBEN Home">
+            <span className="font-black text-2xl tracking-tight text-ink">
               {siteName}
             </span>
             <span className="text-[10px] text-gray-400 tracking-wide mt-0.5 hidden sm:block">
@@ -37,13 +37,13 @@ const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-gray-800">
+          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-ink">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 className={`relative pb-1 transition-colors ${
-                  location.pathname === link.path ? 'text-black' : 'hover:text-gold-500'
+                  location.pathname === link.path ? 'text-ink' : 'hover:text-gold-500'
                 }`}
               >
                 {link.label}
@@ -54,15 +54,14 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-5 text-black">
-            <Link to="/products" aria-label="Search" className="hidden sm:block hover:text-gold-500 transition-colors">
+          <div className="flex items-center gap-5 text-ink">
+            <Link to="/products" aria-label="Search products" className="nav-search hover:text-gold-500 transition-colors">
               <FiSearch className="w-5 h-5" />
+              <span className="hidden lg:inline text-sm font-semibold">Search</span>
             </Link>
-            <a href={adminUrl} aria-label="Admin login" className="hover:text-gold-500 transition-colors">
-              <FiUser className="w-5 h-5" />
-            </a>
+            <ThemeToggle />
             <button
-              className="md:hidden p-1 text-black"
+              className="md:hidden p-1 text-ink"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
@@ -74,7 +73,7 @@ const Navbar = () => {
         </nav>
 
         {mobileMenuOpen && (
-          <div id="mobile-menu" className="md:hidden border-t border-gray-100 bg-white">
+          <div id="mobile-menu" className="md:hidden border-t border-line bg-surface">
             <div className="py-4 space-y-1 px-4">
               {navLinks.map((link) => (
                 <Link
@@ -83,7 +82,7 @@ const Navbar = () => {
                   className={`block px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
                     location.pathname === link.path
                       ? 'bg-gold-500/10 text-gold-600'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      : 'text-ink hover:bg-surface-muted'
                   }`}
                 >
                   {link.label}

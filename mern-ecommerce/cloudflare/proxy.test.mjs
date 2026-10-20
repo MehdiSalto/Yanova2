@@ -25,11 +25,11 @@ test('forwards POST body, CSRF and cookies while keeping the configured upstream
     return new Response('{"ok":true}', { headers: { 'Content-Type': 'application/json', 'Set-Cookie': 'accessToken=test; HttpOnly; Secure; SameSite=Lax' } });
   });
   const request = new Request('https://shop.pages.dev/api/contacts?next=https://other.invalid', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: 'yanovaCsrfSeed=fixture', 'X-CSRF-Token': 'signed-fixture', Origin: 'https://shop.pages.dev', 'X-Forwarded-For': 'spoofed', 'CF-Connecting-IP': '192.0.2.10' }, body: '{"message":"fixture message"}',
+    method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: 'yanobenCsrfSeed=fixture', 'X-CSRF-Token': 'signed-fixture', Origin: 'https://shop.pages.dev', 'X-Forwarded-For': 'spoofed', 'CF-Connecting-IP': '192.0.2.10' }, body: '{"message":"fixture message"}',
   });
   const result = await onRequest({ request, env: { BACKEND_URL: 'https://api.example.invalid' } });
   assert.equal(forwarded.url, 'https://api.example.invalid/api/contacts?next=https://other.invalid');
-  assert.equal(forwarded.headers.get('Cookie'), 'yanovaCsrfSeed=fixture');
+  assert.equal(forwarded.headers.get('Cookie'), 'yanobenCsrfSeed=fixture');
   assert.equal(forwarded.headers.get('X-CSRF-Token'), 'signed-fixture');
   assert.equal(forwarded.headers.get('Origin'), 'https://shop.pages.dev');
   assert.equal(forwarded.headers.get('X-Forwarded-For'), '192.0.2.10');

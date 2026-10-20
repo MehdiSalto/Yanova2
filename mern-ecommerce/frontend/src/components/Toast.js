@@ -9,16 +9,16 @@ const toastIcons = {
 };
 
 const bgColors = {
-  success: 'bg-white border-green-200',
-  error: 'bg-white border-red-200',
-  info: 'bg-white border-gray-200',
-  warning: 'bg-white border-gold-500/40',
+  success: 'bg-surface border-green-200',
+  error: 'bg-surface border-red-200',
+  info: 'bg-surface border-line',
+  warning: 'bg-surface border-gold-500/40',
 };
 
 const iconColors = {
   success: 'text-green-500',
   error: 'text-red-500',
-  info: 'text-gray-500',
+  info: 'text-muted',
   warning: 'text-gold-600',
 };
 
@@ -39,7 +39,7 @@ const Toast = ({ type, message, onClose }) => {
       <p className="text-black text-sm flex-1">{message}</p>
       <button
         onClick={onClose}
-        className="text-gray-400 hover:text-black transition-colors flex-shrink-0"
+        className="text-gray-400 hover:text-ink transition-colors flex-shrink-0"
         aria-label="Dismiss"
       >
         <FiX className="w-4 h-4" />

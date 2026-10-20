@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { cookieOptions } = require('../utils/generateTokens');
 const httpError = require('../utils/httpError');
-const COOKIE = 'yanovaCsrfSeed';
+const COOKIE = 'yanobenCsrfSeed';
 const hex = /^[a-f0-9]{64}$/;
 // Signed token bound to a random HttpOnly cookie and the current login cookie.
 const mac = (seed, nonce, accessToken = '') => crypto.createHmac('sha256', process.env.JWT_ACCESS_SECRET)

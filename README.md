@@ -1,4 +1,4 @@
-# YANOVA
+# YANOBEN
 
 The application source is in [mern-ecommerce](mern-ecommerce/README.md).
 

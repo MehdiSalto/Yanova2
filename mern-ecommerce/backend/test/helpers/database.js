@@ -69,7 +69,7 @@ const fixture = () => {
   return {reset:()=>{for(const store of stores.values())store.splice(0);},stores};
 };
 const createDatabase=async()=>{
-  if(process.env.YANOVA_INTEGRATION==='true'){
+  if(process.env.YANOBEN_INTEGRATION==='true'){
     const {MongoMemoryServer}=require('mongodb-memory-server');
     const db=await MongoMemoryServer.create({binary:{version:'7.0.14'}});await mongoose.connect(db.getUri());
     await Promise.all(models.map(Model=>Model.init()));

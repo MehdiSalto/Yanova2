@@ -16,7 +16,7 @@ const settingsSchema = new mongoose.Schema(
       termsConditions: { type: String, default: '' },
     },
     siteInfo: {
-      siteName: { type: String, default: 'YANOVA' },
+      siteName: { type: String, default: 'YANOBEN' },
       tagline: { type: String, default: 'Smart Technology. Better Living.' },
       supportEmail: { type: String, default: '' },
     },

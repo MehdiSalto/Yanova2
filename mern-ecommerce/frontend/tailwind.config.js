@@ -4,6 +4,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        'surface-muted': 'rgb(var(--color-surface-muted) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        line: 'rgb(var(--color-line) / <alpha-value>)',
         // Gold accent — used across storefront (buttons, highlights, eyebrows)
         gold: {
           400: '#FCD34D',
@@ -17,7 +23,7 @@ module.exports = {
           500: '#FBBF24',
           600: '#F5A623',
         },
-        // Dark surface tones — used for admin dashboard & dark sections
+        // Dark surface tones — used for dark sections
         dark: {
           900: '#111111',
           950: '#0A0A0A',

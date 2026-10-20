@@ -2,9 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+  --admin-text: 24 32 45;
+  --admin-dark-50: 24 32 45;
+  --admin-dark-100: 35 46 62;
+  --admin-dark-200: 49 62 80;
+  --admin-dark-300: 75 89 109;
+  --admin-dark-400: 92 106 125;
+  --admin-dark-500: 103 117 136;
+  --admin-dark-600: 139 151 168;
+  --admin-dark-700: 201 211 224;
+  --admin-dark-800: 226 232 240;
+  --admin-dark-900: 255 255 255;
+  --admin-dark-950: 246 248 251;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --admin-text: 241 245 249;
+  --admin-dark-50: 247 247 248;
+  --admin-dark-100: 225 225 230;
+  --admin-dark-200: 194 194 204;
+  --admin-dark-300: 157 157 171;
+  --admin-dark-400: 119 119 137;
+  --admin-dark-500: 93 93 110;
+  --admin-dark-600: 73 73 87;
+  --admin-dark-700: 60 60 71;
+  --admin-dark-800: 42 42 50;
+  --admin-dark-900: 28 28 34;
+  --admin-dark-950: 18 18 22;
+}
+
 @layer base {
   body {
-    @apply bg-dark-950 text-white antialiased;
+    @apply bg-dark-950 antialiased;
+    color: rgb(var(--admin-text));
     font-family: 'Inter', system-ui, sans-serif;
   }
 }
@@ -12,6 +44,7 @@
 @layer components {
   .btn-primary {
     @apply bg-gold-500 hover:bg-gold-600 text-dark-950 font-semibold px-6 py-3 rounded-lg transition-all duration-200 shadow-lg shadow-gold-500/20;
+    color: #17110c;
   }
 
   .btn-secondary {
@@ -29,4 +62,29 @@
   .eyebrow {
     @apply text-gold-400 text-sm font-semibold tracking-[0.2em] uppercase mb-2;
   }
+}
+
+.text-white, .hover\:text-white:hover, .input-field, .btn-secondary { color: rgb(var(--admin-text)); }
+.bg-gold-500.text-dark-950 { color: #17110c; }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgb(var(--admin-dark-700));
+  background: rgb(var(--admin-dark-900));
+  color: rgb(var(--admin-text));
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.theme-toggle svg { width: 1.2rem; height: 1.2rem; }
+.theme-toggle:focus-visible { outline: 2px solid #c4922b; outline-offset: 3px; }
+@media (max-width: 639px) {
+  html { font-size: 14px; }
+  .input-field { font-size: 16px; }
+  .btn-primary, .btn-secondary, .theme-toggle { min-height: 40px; }
 }

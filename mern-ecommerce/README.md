@@ -1,4 +1,4 @@
-# YANOVA — storefront and administration
+# YANOBEN — storefront and administration
 
 For the independent Cloudflare frontends, see [CLOUDFLARE.md](CLOUDFLARE.md).
 

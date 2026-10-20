@@ -27,7 +27,7 @@ const ProductCard = ({ product }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      <div className="relative aspect-square overflow-hidden bg-gray-50">
+      <div className="product-visual relative aspect-square overflow-hidden bg-surface-muted">
         <img
           src={mediaUrl(product.imageUrl)}
           alt={product.name}
@@ -51,18 +51,18 @@ const ProductCard = ({ product }) => {
       </div>
 
       <div className="p-5">
-        <h3 className="font-bold text-lg text-black mb-2 line-clamp-1">{product.name}</h3>
-        <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
+        <h3 className="font-bold text-lg text-ink mb-2 line-clamp-1">{product.name}</h3>
+        <p className="text-muted text-sm mb-4 line-clamp-2">{product.description}</p>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {discountPrice ? (
               <>
-                <span className="text-2xl font-black text-black">${discountPrice}</span>
+                <span className="text-2xl font-black text-ink">${discountPrice}</span>
                 <span className="text-gray-400 line-through text-base">${product.price.toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-2xl font-black text-black">${product.price.toFixed(2)}</span>
+              <span className="text-2xl font-black text-ink">${product.price.toFixed(2)}</span>
             )}
           </div>
           <button

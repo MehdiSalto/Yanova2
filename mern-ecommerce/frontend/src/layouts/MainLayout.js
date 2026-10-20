@@ -18,6 +18,6 @@ const MainLayout=()=>{
     const socket=io(socketUrl,{withCredentials:true,auth:{role:'visitor',sessionId:sessionId()}});
     return()=>socket.disconnect();
   },[]);
-  return <SiteProvider><div className="min-h-screen bg-white flex flex-col"><Navbar/><main className="flex-1"><SiteBanners position="top"/><Outlet/></main><SiteBanners position="footer"/><Footer/></div></SiteProvider>;
+  return <SiteProvider><div className="store-app min-h-screen bg-canvas flex flex-col"><Navbar/><main className="flex-1"><SiteBanners position="top"/><Outlet/></main><SiteBanners position="footer"/><Footer/></div></SiteProvider>;
 };
 export default MainLayout;

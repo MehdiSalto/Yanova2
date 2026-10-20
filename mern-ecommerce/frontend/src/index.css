@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+  --color-canvas: 255 255 255;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 247 248 250;
+  --color-ink: 16 20 27;
+  --color-muted: 91 101 116;
+  --color-line: 218 224 232;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-canvas: 16 20 27;
+  --color-surface: 24 30 40;
+  --color-surface-muted: 31 39 52;
+  --color-ink: 241 245 249;
+  --color-muted: 172 184 201;
+  --color-line: 58 70 87;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -14,14 +34,14 @@ html {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  @apply bg-white text-black antialiased;
+  @apply bg-canvas text-ink antialiased;
 }
 
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  @apply bg-surface-muted;
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-gold-500 rounded-full;
@@ -48,13 +68,13 @@ body {
   }
 
   .btn-ghost {
-    @apply px-4 py-2 text-gray-600 font-medium rounded-md
-           hover:text-black hover:bg-gray-50 transition-all duration-200;
+    @apply px-4 py-2 text-muted font-medium rounded-md
+           hover:text-ink hover:bg-surface-muted transition-all duration-200;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-white border border-gray-200 rounded-md
-           text-black placeholder-gray-400
+    @apply w-full px-4 py-3 bg-surface border border-line rounded-md
+           text-ink placeholder-muted
            focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20
            transition-all duration-200;
   }
@@ -76,14 +96,14 @@ body {
 /* Light "card" surface — used on white sections (storefront) */
 @layer utilities {
   .glass {
-    @apply bg-white border border-gray-200 shadow-sm rounded-xl;
+    @apply bg-surface border border-line shadow-sm rounded-xl;
   }
   .glass-strong {
-    @apply bg-white border border-gray-200 shadow-md rounded-2xl;
+    @apply bg-surface border border-line shadow-md rounded-2xl;
   }
 }
 
-/* Dark "panel" surface — used on black sections (hero, testimonials, footer, admin) */
+/* Dark panels used in the hero and footer. */
 @layer utilities {
   .panel-dark {
     @apply bg-dark-950 border border-white/10 rounded-2xl;
@@ -96,7 +116,7 @@ body {
   }
 
   .eyebrow {
-    @apply text-gold-500 text-xs font-bold tracking-[0.2em] uppercase mb-3;
+    @apply text-gold-600 text-xs font-bold tracking-[0.2em] uppercase mb-3;
   }
 
   .section-title {
@@ -104,6 +124,67 @@ body {
   }
 
   .section-subtitle {
-    @apply text-base sm:text-lg text-gray-500 text-center max-w-2xl mx-auto mb-12;
+    @apply text-base sm:text-lg text-muted text-center max-w-2xl mx-auto mb-12;
   }
+}
+
+.theme-toggle, .nav-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.5rem;
+  border-radius: 0.6rem;
+}
+.theme-toggle {
+  border: 1px solid rgb(var(--color-line));
+  background: rgb(var(--color-surface-muted));
+  color: rgb(var(--color-ink));
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.theme-toggle svg { width: 1.2rem; height: 1.2rem; }
+.theme-toggle:focus-visible, .nav-search:focus-visible {
+  outline: 2px solid #d49517;
+  outline-offset: 3px;
+}
+.search-field {
+  display: flex;
+  align-items: center;
+  position: relative;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  min-height: 3.5rem;
+  border: 2px solid #b58416;
+  border-radius: 0.75rem;
+  background: rgb(var(--color-surface));
+  box-shadow: 0 3px 12px rgb(138 100 19 / 0.08);
+}
+.search-field:focus-within { outline: 3px solid rgb(251 191 36 / 0.25); outline-offset: 2px; }
+.search-icon { width: 1.3rem; height: 1.3rem; flex-shrink: 0; color: #b58416; }
+.search-field input { width: 100%; min-width: 0; padding: 0.9rem 0; background: transparent; color: rgb(var(--color-ink)); border: 0; outline: none; font: inherit; }
+.search-field input::placeholder { color: rgb(var(--color-muted)); opacity: 1; }
+.search-field input::-webkit-search-cancel-button { display: none; }
+.search-clear { display: grid; place-items: center; min-width: 40px; min-height: 40px; border-radius: 50%; color: rgb(var(--color-muted)); }
+.search-clear:hover { background: rgb(var(--color-surface-muted)); }
+.search-clear:focus-visible { outline: 2px solid #d49517; }
+
+/* A modest scale reduction only on phones. Desktop and tablet sizing is unchanged. */
+@media (max-width: 639px) {
+  html { font-size: 14px; }
+  .store-nav { height: 64px; }
+  .store-nav > div:last-child { gap: 0.35rem; }
+  .theme-toggle, .nav-search { min-width: 40px; min-height: 40px; }
+  .store-nav button[aria-controls] { min-width: 40px; min-height: 40px; }
+  .input-field, .search-field input { font-size: 16px; }
+  .btn-primary, .btn-secondary { min-height: 40px; }
+  .hero-visual { max-width: 88%; margin-inline: auto; width: 100%; }
+  .product-visual { aspect-ratio: 1.12; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

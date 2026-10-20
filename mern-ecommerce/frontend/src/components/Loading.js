@@ -16,7 +16,7 @@ const LoadingSpinner = ({ size = 'md', className = '' }) => {
 };
 
 const Skeleton = ({ className = '', variant = 'text' }) => {
-  const baseClass = 'animate-pulse bg-gray-100 rounded';
+  const baseClass = 'animate-pulse bg-surface-muted rounded';
   const variantClasses = {
     text: 'h-4 w-full',
     title: 'h-6 w-3/4',

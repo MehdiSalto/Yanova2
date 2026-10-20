@@ -11,8 +11,8 @@ export const AuthProvider = ({ children }) => {
       if (active && error.response?.status !== 401) setConnectionError('Unable to reach the server. Check the connection and try again.');
     }).finally(() => { if (active) setLoading(false); });
     const expire = () => { clearCsrfToken(); setAdmin(null); };
-    window.addEventListener('yanova:session-expired', expire);
-    return () => { active = false; window.removeEventListener('yanova:session-expired', expire); };
+    window.addEventListener('yanoben:session-expired', expire);
+    return () => { active = false; window.removeEventListener('yanoben:session-expired', expire); };
   }, []);
   const login = async (email, password) => { const { data } = await authAPI.login(email, password); setAdmin(data.admin); setConnectionError(''); return data; };
   const changePassword = async values => { const { data } = await authAPI.password(values); setAdmin(data.admin); return data; };

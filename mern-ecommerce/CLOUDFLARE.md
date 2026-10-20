@@ -17,7 +17,6 @@ The table below also records settings for a future Git connection.
 | Build output | `build` | `dist` |
 | `NODE_VERSION` | `22` | `22` |
 | `VITE_BASE_PATH` | n/a | `/` |
-| `REACT_APP_ADMIN_URL` | Published admin origin plus `/login` | n/a |
 
 Leave `REACT_APP_API_URL`, `REACT_APP_SOCKET_URL` and `VITE_API_URL` empty for
 the same-origin proxy. Admin login on its independent origin is `/login`.
@@ -26,7 +25,9 @@ The default Vite base remains `/admin/` for integrated Node hosting.
 Pages Functions route only `/api`, `/uploads` and `/socket.io` to Express.
 Until `BACKEND_URL` is configured, these paths return JSON 503 instead of SPA
 HTML, keeping the static UI usable without claiming the service is connected.
-The Express backend and MongoDB are not deployed by this frontend operation.
+The deployed API origin is https://yanova2-production.up.railway.app.
+The display brand is YANOBEN. Existing project hostnames and the configured
+production database name are kept to retain their connections.
 
 After the backend is online, set `BACKEND_URL` to its HTTPS origin, without an
 API path, in both Pages projects' production and preview environments. Redeploy
@@ -45,6 +46,9 @@ If deploying by Direct Upload, build from the above roots and bundle the
 Functions with Wrangler before uploading. Keep all source/config changes in
 GitHub; generated `build` and `dist` outputs stay untracked.
 
-Deployment checks: both production frontend builds and six proxy tests pass.
-The proxy tests use mocked upstream fetch calls; no live backend or database is
-claimed. Run `node --test cloudflare/proxy.test.mjs` from the application root.
+Deployment checks (20 October 2026): both production frontend builds, 14
+backend contract/security tests (including saved-brand migration), and six proxy
+tests pass. Browser checks cover the default light theme, dark-theme persistence,
+search requests/clearing, absent client admin links, and phone-only scaling.
+Local browser checks use fixture product data; deployed checks use the real API.
+Run `node --test cloudflare/proxy.test.mjs` from the application root.

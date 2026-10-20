@@ -9,7 +9,7 @@ const start = async () => {
   validateEnvironment();
   await connectDB(); await seedAdmin();
   const app = createApp(); const server = http.createServer(app); const io = attachSockets(server, app);
-  server.listen(process.env.PORT || 5000, () => console.log(`YANOVA server listening on port ${process.env.PORT || 5000}`));
+  server.listen(process.env.PORT || 5000, () => console.log(`YANOBEN server listening on port ${process.env.PORT || 5000}`));
   const shutdown = () => {
     const timeout = setTimeout(() => process.exit(1), 10000); timeout.unref();
     io.close(); server.close(async () => { await mongoose.disconnect(); clearTimeout(timeout); process.exit(0); });

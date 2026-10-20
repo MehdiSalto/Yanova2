@@ -23,8 +23,8 @@ const request=async(route,{method='GET',data,store=jar,csrf=true,headers={}}={})
 };
 const product=(overrides={})=>({name:'Fixture product',description:'A description for testing',price:25,discount:10,imageUrl:'https://example.invalid/product.png',buyLink:'https://example.invalid/buy',category:'general',status:'draft',gallery:[],colors:['gold'],sizes:['M'],stock:3,...overrides});
 const tracking=(id='a'.repeat(32))=>({device:'desktop',sessionId:'s'.repeat(32),eventId:id});
-describe('YANOVA contracts and security',()=>{
-  before(async()=>{uploadDir=await fs.mkdtemp(path.join(os.tmpdir(),'yanova-upload-test-'));process.env.UPLOAD_DIR=uploadDir;db=await createDatabase();console.log(`Database test mode: ${db.mode}`);const app=createApp();server=http.createServer(app);io=attachSockets(server,app);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));url=`http://127.0.0.1:${server.address().port}`;});
+describe('YANOBEN contracts and security',()=>{
+  before(async()=>{uploadDir=await fs.mkdtemp(path.join(os.tmpdir(),'yanoben-upload-test-'));process.env.UPLOAD_DIR=uploadDir;db=await createDatabase();console.log(`Database test mode: ${db.mode}`);const app=createApp();server=http.createServer(app);io=attachSockets(server,app);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));url=`http://127.0.0.1:${server.address().port}`;});
   beforeEach(async()=>{await db.reset();admin=await Admin.create({email:'audit@example.invalid',password:PASSWORD,role:'superadmin'});jar={accessToken:generateAccessToken(admin)};});
   after(async()=>{if(io)await new Promise(resolve=>io.close(resolve));if(server){server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}await db?.close();if(uploadDir)await fs.rm(uploadDir,{recursive:true,force:true});});
   it('logs in using the real password hook; cookie expiry matches JWT',async()=>{
@@ -89,6 +89,10 @@ describe('YANOVA contracts and security',()=>{
     result=await request('/api/settings/policies',{method:'PUT',data:{policies:{privacyPolicy:'Privacy test',shippingPolicy:'Shipping test'}}});assert.equal(result.status,200);
     result=await request('/api/settings/site',{method:'PUT',data:{siteInfo:{siteName:'Test Shop',tagline:'Test tagline',supportEmail:'support@example.invalid'}}});assert.equal(result.status,200);
     const data=(await request('/api/settings',{store:{}})).body;assert.equal(data.aboutUs.companyStory,'Real company story');assert.equal(data.policies.shippingPolicy,'Shipping test');assert.equal(data.siteInfo.siteName,'Test Shop');
+    const Settings=require('../models/Settings');
+    await Settings.updateOne({},{$set:{'siteInfo.siteName':'YANOVA','aboutUs.companyStory':'Welcome to Yanova.','siteInfo.supportEmail':'saved@example.invalid'}});
+    const renamed=(await request('/api/settings',{store:{}})).body;
+    assert.equal(renamed.siteInfo.siteName,'YANOBEN');assert.equal(renamed.aboutUs.companyStory,'Welcome to YANOBEN.');assert.equal(renamed.siteInfo.supportEmail,'saved@example.invalid');
   });
   it('records deduplicated page views, tracks external clicks and excludes admin traffic',async()=>{
     const visitor={};const event={...tracking(),path:'/products'};

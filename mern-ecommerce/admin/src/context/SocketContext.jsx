@@ -10,8 +10,8 @@ export const SocketProvider = ({ children }) => {
     if (!admin) { socket.disconnect(); setLiveUsers(0); return; }
     const live = count => setLiveUsers(count);
     const update = () => setRevision(value => value + 1);
-    const connectError = error => { if (error.message === 'Sign in to view analytics.') window.dispatchEvent(new Event('yanova:session-expired')); };
-    const disconnect = reason => { setLiveUsers(0); if (reason === 'io server disconnect') window.dispatchEvent(new Event('yanova:session-expired')); };
+    const connectError = error => { if (error.message === 'Sign in to view analytics.') window.dispatchEvent(new Event('yanoben:session-expired')); };
+    const disconnect = reason => { setLiveUsers(0); if (reason === 'io server disconnect') window.dispatchEvent(new Event('yanoben:session-expired')); };
     socket.on('analytics:liveUsers', live); socket.on('analytics:update', update);
     socket.on('connect_error', connectError); socket.on('disconnect', disconnect); socket.connect();
     return () => { socket.off('analytics:liveUsers', live); socket.off('analytics:update', update); socket.off('connect_error', connectError); socket.off('disconnect', disconnect); socket.disconnect(); };

@@ -21,17 +21,9 @@ api.interceptors.response.use(response => response, async (error) => {
   if (request && error.response?.data?.code === 'INVALID_CSRF' && !request._csrfRetry) {
     request._csrfRetry = true; clearCsrfToken(); return api(request);
   }
-  if (error.response?.status === 401 && !request?.url?.includes('/auth/')) {
-    clearCsrfToken(); window.dispatchEvent(new Event('yanova:session-expired'));
-  }
   return Promise.reject(error);
 });
 export const mediaUrl = value => value?.startsWith('/uploads/') ? `${API_ROOT}${value}` : value;
-export const authAPI = {
-  me: () => api.get('/auth/me'),
-  login: async (email, password) => { const result = await api.post('/auth/login', { email, password }); clearCsrfToken(); return result; },
-  logout: async () => { const result = await api.post('/auth/logout'); clearCsrfToken(); return result; },
-};
 export const productAPI = {
   getAll: (params, config = {}) => api.get('/products', { ...config, params }), getOne: id => api.get(`/products/${id}`),
   click: (id, device) => api.post(`/products/${id}/click`, { ...trackingInfo(), device }),
