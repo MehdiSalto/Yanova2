@@ -44,6 +44,12 @@ export const contactsAPI = {
   update: (id, data) => api.patch(`/contacts/${id}/status`, data),
   markAsRead: id => api.patch(`/contacts/${id}/read`), delete: id => api.delete(`/contacts/${id}`),
 };
+export const sponsorshipsAPI = {
+  getForm: config => api.get('/sponsorships/form', config),
+  getAll: (params, config = {}) => api.get('/sponsorships', { ...config, params }),
+  update: (id, data) => api.patch(`/sponsorships/${id}`, data),
+  delete: id => api.delete(`/sponsorships/${id}`),
+};
 export const dashboardAPI = {
   getStats: config => api.get('/dashboard/stats', config),
   getActive: config => api.get('/dashboard/active', config),

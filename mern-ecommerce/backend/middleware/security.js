@@ -16,6 +16,7 @@ const limiter = (max, windowMs, message) => rateLimit({
 });
 const authLimiter = limiter(20, 15 * 60 * 1000, 'Too many sign-in attempts. Please try later.');
 const contactLimiter = limiter(10, 15 * 60 * 1000, 'Too many messages. Please try later.');
+const sponsorshipLimiter = limiter(10, 15 * 60 * 1000, 'Too many sponsorship requests. Please try again later.');
 const trackingLimiter = limiter(180, 60 * 1000, 'Too many tracking requests.');
 const uploadLimiter = limiter(30, 15 * 60 * 1000, 'Too many uploads. Please try later.');
 const applySecurity = (app) => {
@@ -35,4 +36,4 @@ const applySecurity = (app) => {
 };
 // Run after body parsers so JSON and form bodies are included.
 const sanitize = mongoSanitize({ replaceWith: '_' });
-module.exports = { applySecurity, sanitize, corsOptions, isAllowedOrigin, authLimiter, contactLimiter, trackingLimiter, uploadLimiter };
+module.exports = { applySecurity, sanitize, corsOptions, isAllowedOrigin, authLimiter, contactLimiter, sponsorshipLimiter, trackingLimiter, uploadLimiter };

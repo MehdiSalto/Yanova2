@@ -9,6 +9,7 @@ import AdminProductAnalyticsPage from './pages/AdminProductAnalyticsPage';
 import AdminOffersPage from './pages/AdminOffersPage';
 import AdminBannersPage from './pages/AdminBannersPage';
 import AdminContactsPage from './pages/AdminContactsPage';
+import AdminSponsorshipsPage from './pages/AdminSponsorshipsPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 
 const ProtectedRoute = ({ children }) => {
@@ -51,6 +52,7 @@ const App = () => {
               <Route path="offers" element={<AdminOffersPage />} />
               <Route path="banners" element={<AdminBannersPage />} />
               <Route path="contacts" element={<AdminContactsPage />} />
+              <Route path="sponsorships" element={<AdminSponsorshipsPage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
 

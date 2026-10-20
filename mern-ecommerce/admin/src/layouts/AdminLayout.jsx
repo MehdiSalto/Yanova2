@@ -1,11 +1,11 @@
 import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiGrid,FiPackage,FiTag,FiImage,FiMail,FiSettings,FiLogOut } from 'react-icons/fi';
+import { FiGrid,FiPackage,FiTag,FiImage,FiMail,FiSettings,FiLogOut,FiBriefcase } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import ErrorNotice, { errorMessage } from '../components/ErrorNotice';
-const nav=[['/','Dashboard',FiGrid],['/products','Products',FiPackage],['/offers','Offers',FiTag],['/banners','Banners',FiImage],['/contacts','Contacts',FiMail],['/settings','Settings',FiSettings]];
+const nav=[['/','Dashboard',FiGrid],['/products','Products',FiPackage],['/offers','Offers',FiTag],['/banners','Banners',FiImage],['/contacts','Contacts',FiMail],['/sponsorships','Sponsorships',FiBriefcase],['/settings','Settings',FiSettings]];
 const AdminLayout=()=>{
   const {admin,logout}=useAuth();const {liveUsers}=useSocket();const navigate=useNavigate();const [error,setError]=useState('');const [busy,setBusy]=useState(false);
   const signOut=async()=>{setBusy(true);try{await logout();navigate('/login');}catch(err){setError(errorMessage(err));}finally{setBusy(false);}};

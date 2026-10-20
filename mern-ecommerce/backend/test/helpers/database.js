@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const models = ['Admin','Product','Offer','Banner','Contact','Settings','Click','VisitorSession'].map(name => require(`../../models/${name}`));
+const models = ['Admin','Product','Offer','Banner','Contact','Sponsorship','Settings','Click','VisitorSession'].map(name => require(`../../models/${name}`));
 const clone = value => {
   if (value instanceof Date) return new Date(value);
   if (value?.toHexString) return new mongoose.Types.ObjectId(value.toHexString());
@@ -38,7 +38,7 @@ const fixture = () => {
   for(const Model of models){
     const store=stores.get(Model.modelName);const collection=Model.collection;
     const unique = doc => {
-      if(Model.modelName==='Click'&&doc.eventId&&store.some(item=>item.eventId===doc.eventId)||Model.modelName==='Admin'&&store.some(item=>item.email===doc.email)||Model.modelName==='Settings'&&doc.key&&store.some(item=>item.key===doc.key))throw Object.assign(new Error('Duplicate key'),{code:11000});
+      if(Model.modelName==='Sponsorship'&&store.some(item=>item.submissionId===doc.submissionId)||Model.modelName==='Click'&&doc.eventId&&store.some(item=>item.eventId===doc.eventId)||Model.modelName==='Admin'&&store.some(item=>item.email===doc.email)||Model.modelName==='Settings'&&doc.key&&store.some(item=>item.key===doc.key))throw Object.assign(new Error('Duplicate key'),{code:11000});
     };
     collection.insertOne=async doc=>{unique(doc);store.push(clone(doc));return {acknowledged:true,insertedId:doc._id};};
     collection.findOne=async(filter,options)=>project(store.find(doc=>matches(doc,filter)),options);

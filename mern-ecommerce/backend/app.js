@@ -17,7 +17,7 @@ const createApp = () => {
   app.use(sanitize); app.use(cookieParser());
   app.get('/api/health', (req, res) => res.status(mongoose.connection.readyState === 1 ? 200 : 503).json({ status: mongoose.connection.readyState === 1 ? 'ready' : 'unavailable' }));
   app.get('/api/csrf-token', issueCsrfToken);
-  for (const [prefix, filename] of [['auth','auth'],['products','product'],['offers','offer'],['banners','banner'],['contacts','contact'],['settings','settings'],['dashboard','dashboard'],['clicks','click'],['upload','upload']]) {
+  for (const [prefix, filename] of [['auth','auth'],['products','product'],['offers','offer'],['banners','banner'],['contacts','contact'],['sponsorships','sponsorship'],['settings','settings'],['dashboard','dashboard'],['clicks','click'],['upload','upload']]) {
     app.use(`/api/${prefix}`, require(`./routes/${filename}Routes`));
   }
   app.use('/api', notFound);

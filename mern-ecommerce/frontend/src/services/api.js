@@ -35,6 +35,10 @@ export const offerAPI = {
 };
 export const bannerAPI = { getAll: config => api.get('/banners', { ...config, params: { limit: 100 } }) };
 export const contactAPI = { submit: data => api.post('/contacts', data) };
+export const sponsorshipAPI = {
+  getForm: config => api.get('/sponsorships/form', config),
+  submit: data => api.post('/sponsorships', data),
+};
 export const settingsAPI = {
   get: config => api.get('/settings', config), updateAbout: data => api.put('/settings/about', data), updatePolicies: data => api.put('/settings/policies', data),
 };

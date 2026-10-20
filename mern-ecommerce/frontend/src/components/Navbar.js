@@ -10,6 +10,7 @@ const navLinks = [
   { path: '/offers', label: 'OFFERS' },
   { path: '/about', label: 'ABOUT US' },
   { path: '/contact', label: 'CONTACT' },
+  { path: '/advertise', label: 'ADVERTISE' },
 ];
 
 const Navbar = () => {
@@ -37,7 +38,7 @@ const Navbar = () => {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-ink">
+          <div className="hidden lg:flex items-center gap-6 text-sm font-semibold text-ink">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -61,7 +62,7 @@ const Navbar = () => {
             </Link>
             <ThemeToggle />
             <button
-              className="md:hidden p-1 text-ink"
+              className="lg:hidden p-1 text-ink"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
@@ -73,7 +74,7 @@ const Navbar = () => {
         </nav>
 
         {mobileMenuOpen && (
-          <div id="mobile-menu" className="md:hidden border-t border-line bg-surface">
+          <div id="mobile-menu" className="lg:hidden border-t border-line bg-surface">
             <div className="py-4 space-y-1 px-4">
               {navLinks.map((link) => (
                 <Link
@@ -97,3 +98,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
