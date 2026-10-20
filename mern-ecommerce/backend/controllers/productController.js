@@ -3,6 +3,7 @@ const Click = require('../models/Click');
 const { list, search, pick } = require('../utils/pagination');
 const httpError = require('../utils/httpError');
 const { notifyAdmins } = require('../utils/events');
+const { shouldTrack, trackingFields } = require('../utils/analytics');
 const fields = ['name','description','price','discount','imageUrl','gallery','buyLink','category','featured','status','stock','colors','sizes'];
 const getProducts = async (req, res) => {
   const filter = req.management ? {} : { status: 'published' };
@@ -34,13 +35,22 @@ const deleteProduct = async (req, res) => {
   notifyAdmins(req, 'analytics:update', { type: 'catalog' }); res.json({ message: 'Product deleted.' });
 };
 const registerClick = async (req, res) => {
-  if (req.admin) return res.status(204).end();
+  if (!shouldTrack(req)) return res.status(204).end();
   const product = await Product.findOne({ _id: req.params.id, status: 'published' });
   if (!product) throw httpError(404, 'Product not found.');
-  try { await Click.create({ type: 'product_click', refId: product._id, device: req.body.device, sessionId: req.body.sessionId, eventId: req.body.eventId }); }
+  try { await Click.create({ type: 'product_click', refId: product._id, ...trackingFields(req) }); }
   catch (error) { if (error.code === 11000) return res.json({ clickCount: product.clickCount, duplicate: true }); throw error; }
   const updated = await Product.findByIdAndUpdate(product._id, { $inc: { clickCount: 1 } }, { new: true });
   notifyAdmins(req, 'analytics:update', { type: 'product_click' });
   res.json({ clickCount: updated?.clickCount || product.clickCount + 1 });
 };
-module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, registerClick };
+const registerView = async (req, res) => {
+  if (!shouldTrack(req)) return res.status(204).end();
+  const product = await Product.findOne({ _id: req.params.id, status: 'published' });
+  if (!product) throw httpError(404, 'Product not found.');
+  try { await Click.create({ type: 'product_view', refId: product._id, ...trackingFields(req) }); }
+  catch (error) { if (error.code === 11000) return res.json({ duplicate: true }); throw error; }
+  notifyAdmins(req, 'analytics:update', { type: 'product_view' });
+  res.status(201).json({ message: 'Product view recorded.' });
+};
+module.exports = { getProducts, getProduct, createProduct, updateProduct, deleteProduct, registerClick, registerView };

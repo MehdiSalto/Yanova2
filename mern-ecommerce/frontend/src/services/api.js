@@ -27,6 +27,7 @@ export const mediaUrl = value => value?.startsWith('/uploads/') ? `${API_ROOT}${
 export const productAPI = {
   getAll: (params, config = {}) => api.get('/products', { ...config, params }), getOne: id => api.get(`/products/${id}`),
   click: (id, device) => api.post(`/products/${id}/click`, { ...trackingInfo(), device }),
+  view: (id, eventId) => api.post(`/products/${id}/view`, { ...trackingInfo(), eventId }),
 };
 export const offerAPI = {
   getAll: (params, config = {}) => api.get('/offers', { ...config, params }),
@@ -37,5 +38,9 @@ export const contactAPI = { submit: data => api.post('/contacts', data) };
 export const settingsAPI = {
   get: config => api.get('/settings', config), updateAbout: data => api.put('/settings/about', data), updatePolicies: data => api.put('/settings/policies', data),
 };
-export const clickAPI = { registerVisit: (device, path, eventId) => api.post('/clicks/visit', { ...trackingInfo(), device, path, eventId }) };
+export const clickAPI = {
+  registerVisit: (device, path, eventId) => api.post('/clicks/visit', { ...trackingInfo(), device, path, eventId }),
+  heartbeat: path => api.post('/clicks/heartbeat', { ...trackingInfo(), path }),
+};
 export default api;
+

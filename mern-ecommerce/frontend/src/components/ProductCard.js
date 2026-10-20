@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { FiExternalLink, FiShoppingCart } from 'react-icons/fi';
 import { productAPI, mediaUrl } from '../services/api';
+import useProductView from '../hooks/useProductView';
 
 const getDevice = () => {
   const w = window.innerWidth;
@@ -10,6 +11,7 @@ const getDevice = () => {
 };
 
 const ProductCard = ({ product }) => {
+  const viewRef = useProductView(product._id);
   const discountPrice = product.discount > 0
     ? (product.price * (1 - product.discount / 100)).toFixed(2)
     : null;
@@ -22,6 +24,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <motion.article
+      ref={viewRef}
       className="group glass card-hover rounded-2xl overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -81,3 +84,4 @@ const ProductCard = ({ product }) => {
 };
 
 export default ProductCard;
+

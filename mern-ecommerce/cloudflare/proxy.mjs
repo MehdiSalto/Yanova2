@@ -24,6 +24,10 @@ export async function onRequest({ request, env }) {
   forwarded.headers.delete('x-forwarded-for');
   const clientIp = request.headers.get('CF-Connecting-IP');
   if (clientIp) forwarded.headers.set('X-Forwarded-For', clientIp);
+  // Derive geography at the edge. Discard any country supplied by the client.
+  forwarded.headers.delete('x-yanoben-country');
+  const country = request.cf?.country;
+  if (typeof country === 'string' && /^[A-Z]{2}$/.test(country)) forwarded.headers.set('X-Yanoben-Country', country);
   try {
     const response = await fetch(forwarded, { redirect: 'manual' });
     // Preserve the native WebSocket upgrade response without reconstructing it.
@@ -35,3 +39,4 @@ export async function onRequest({ request, env }) {
     return result;
   } catch { return unavailable(502, 'BACKEND_UNREACHABLE'); }
 }
+

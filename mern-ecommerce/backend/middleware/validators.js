@@ -42,6 +42,7 @@ const banner = [
   body('order').optional().isInt({ min: 0, max: 9999 }).bail().toInt(), validate,
 ];
 const tracking = [
+  body('visitorId').optional().isString().bail().matches(/^[a-zA-Z0-9_-]{16,80}$/),
   body('device').isIn(['desktop', 'mobile', 'tablet']),
   body('sessionId').isString().bail().matches(/^[a-zA-Z0-9_-]{16,80}$/),
   body('eventId').isString().bail().matches(/^[a-zA-Z0-9_-]{16,140}$/), validate,

@@ -62,3 +62,15 @@ test('upstream failures become generic uncached JSON', async (context) => {
   assert.match(text, /BACKEND_UNREACHABLE/);
   assert(!text.includes('private upstream detail'));
 });
+
+
+test('overwrites browser-supplied geography with trusted edge country', async context => {
+  let forwarded;
+  context.mock.method(globalThis, 'fetch', async request => { forwarded = request; return new Response('{}'); });
+  const request = new Request('https://shop.pages.dev/api/clicks/heartbeat', { headers: { 'X-Yanoben-Country': 'US' } });
+  Object.defineProperty(request, 'cf', { value: { country: 'MA' } });
+  await onRequest({ request, env: { BACKEND_URL: 'https://api.example.invalid' } });
+  assert.equal(forwarded.headers.get('X-Yanoben-Country'), 'MA');
+  await onRequest({ request: new Request('https://shop.pages.dev/api/products', { headers: { 'X-Yanoben-Country': 'US' } }), env: { BACKEND_URL: 'https://api.example.invalid' } });
+  assert.equal(forwarded.headers.has('X-Yanoben-Country'), false);
+});

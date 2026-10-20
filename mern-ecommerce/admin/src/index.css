@@ -88,3 +88,14 @@
   .input-field { font-size: 16px; }
   .btn-primary, .btn-secondary, .theme-toggle { min-height: 40px; }
 }
+
+.analytics-toggle { display: flex; border: 1px solid rgb(var(--admin-dark-700)); border-radius: 0.6rem; padding: 3px; background: rgb(var(--admin-dark-900)); }
+.analytics-toggle button { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border-radius: 0.4rem; padding: 0.6rem 0.75rem; font-size: 0.85rem; }
+.analytics-toggle .is-selected { background: #d6a63d; color: #17110c; font-weight: 700; }
+.analytics-toggle button:focus-visible { outline: 2px solid #ba8726; outline-offset: 2px; }
+.analytics-table { width: 100%; text-align: left; font-size: 0.875rem; }
+.analytics-table th { color: rgb(var(--admin-dark-400)); font-weight: 500; white-space: nowrap; }
+.analytics-table th, .analytics-table td { padding: 0.85rem 0.7rem; border-bottom: 1px solid rgb(var(--admin-dark-800)); }
+.analytics-table td { font-variant-numeric: tabular-nums; }
+.analytics-table tr:last-child td { border-bottom: none; }
+.analytics-empty { padding: 1.5rem 0; font-size: 0.875rem; color: rgb(var(--admin-dark-400)); }

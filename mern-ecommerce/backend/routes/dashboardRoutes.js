@@ -1,7 +1,10 @@
 const express = require('express');
 const { protect, requireRole } = require('../middleware/auth');
 const { getStats } = require('../controllers/dashboardController');
+const { getActive, getAnalytics } = require('../controllers/analyticsController');
 const wrap = require('../utils/asyncHandler');
 const router = express.Router();
 router.get('/stats', protect, requireRole('admin','superadmin'), wrap(getStats));
+router.get('/active', protect, requireRole('admin','superadmin'), wrap(getActive));
+router.get('/analytics', protect, requireRole('admin','superadmin'), wrap(getAnalytics));
 module.exports = router;

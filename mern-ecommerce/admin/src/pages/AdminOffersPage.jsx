@@ -2,7 +2,7 @@ import ManagementPage from '../components/ManagementPage';
 import { offersAPI } from '../services/api';
 const fields = [
   { key: 'title', label: 'Title', required: true }, { key: 'description', label: 'Description', type: 'textarea', required: true },
-  { key: 'imageUrl', label: 'Offer image', type: 'image', required: true },
+  { key: 'imageUrl', label: 'Offer image', type: 'image', required: true, imageSize: { width: 1600, height: 900, ratio: '16:9 landscape', help: 'Used in the wide image area of offer cards. Keep text away from the edges.' } },
   { key: 'offerLink', label: 'External offer link', type: 'url', required: true },
   { key: 'discountPercentage', label: 'Discount (%)', type: 'number', min: 0, max: 100, required: true },
   { key: 'ctaText', label: 'Button text', default: 'Shop Now', required: true },

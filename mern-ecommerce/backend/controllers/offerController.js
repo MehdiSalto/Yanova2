@@ -4,6 +4,7 @@ const { list, search, pick } = require('../utils/pagination');
 const httpError = require('../utils/httpError');
 const publicFilter = require('../utils/offerFilter');
 const { notifyAdmins } = require('../utils/events');
+const { shouldTrack, trackingFields } = require('../utils/analytics');
 const fields = ['title','description','imageUrl','discountPercentage','offerLink','ctaText','code','startsAt','expiresAt','status'];
 const getOffers = async (req, res) => {
   const filter = req.management ? {} : publicFilter(); const term = search(req.query.search);
@@ -20,10 +21,10 @@ const updateOffer = async (req, res) => {
 };
 const deleteOffer = async (req, res) => { if (!await Offer.findByIdAndDelete(req.params.id)) throw httpError(404, 'Offer not found.'); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.json({ message: 'Offer deleted.' }); };
 const registerClick = async (req, res) => {
-  if (req.admin) return res.status(204).end();
+  if (!shouldTrack(req)) return res.status(204).end();
   const offer = await Offer.findOne({ _id: req.params.id, ...publicFilter() });
   if (!offer) throw httpError(404, 'Offer not found.');
-  try { await Click.create({ type: 'offer_click', refId: offer._id, device: req.body.device, sessionId: req.body.sessionId, eventId: req.body.eventId }); }
+  try { await Click.create({ type: 'offer_click', refId: offer._id, ...trackingFields(req) }); }
   catch (error) { if (error.code === 11000) return res.json({ duplicate: true }); throw error; }
   notifyAdmins(req, 'analytics:update', { type: 'offer_click' }); res.status(201).json({ message: 'Click recorded.' });
 };

@@ -44,10 +44,15 @@ export const contactsAPI = {
   update: (id, data) => api.patch(`/contacts/${id}/status`, data),
   markAsRead: id => api.patch(`/contacts/${id}/read`), delete: id => api.delete(`/contacts/${id}`),
 };
-export const dashboardAPI = { getStats: config => api.get('/dashboard/stats', config) };
+export const dashboardAPI = {
+  getStats: config => api.get('/dashboard/stats', config),
+  getActive: config => api.get('/dashboard/active', config),
+  getAnalytics: (params, config = {}) => api.get('/dashboard/analytics', { ...config, params }),
+};
 export const settingsAPI = {
   get: config => api.get('/settings', config), updateAbout: data => api.put('/settings/about', data),
   updatePolicies: data => api.put('/settings/policies', data), updateSite: data => api.put('/settings/site', data),
 };
 export const uploadAPI = { upload: file => { const form = new FormData(); form.append('image', file); return api.post('/upload', form); } };
 export default api;
+

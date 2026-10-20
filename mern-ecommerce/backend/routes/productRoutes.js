@@ -13,6 +13,7 @@ router.get('/manage/:id', ...admin, manage, v.id, wrap(c.getProduct));
 router.get('/:id', v.id, wrap(c.getProduct));
 router.get('/', wrap(c.getProducts));
 router.post('/:id/click', v.id, trackingLimiter, csrfProtection, optionalAuth, v.tracking, wrap(c.registerClick));
+router.post('/:id/view', v.id, trackingLimiter, csrfProtection, optionalAuth, v.tracking, wrap(c.registerView));
 router.post('/', ...admin, v.product, wrap(c.createProduct));
 router.put('/:id', ...admin, v.id, v.product, wrap(c.updateProduct));
 router.delete('/:id', ...admin, v.id, wrap(c.deleteProduct));

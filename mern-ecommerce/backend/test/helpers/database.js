@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const models = ['Admin','Product','Offer','Banner','Contact','Settings','Click'].map(name => require(`../../models/${name}`));
+const models = ['Admin','Product','Offer','Banner','Contact','Settings','Click','VisitorSession'].map(name => require(`../../models/${name}`));
 const clone = value => {
   if (value instanceof Date) return new Date(value);
   if (value?.toHexString) return new mongoose.Types.ObjectId(value.toHexString());
@@ -71,10 +71,11 @@ const fixture = () => {
 const createDatabase=async()=>{
   if(process.env.YANOBEN_INTEGRATION==='true'){
     const {MongoMemoryServer}=require('mongodb-memory-server');
-    const db=await MongoMemoryServer.create({binary:{version:'7.0.14'}});await mongoose.connect(db.getUri());
+    const db=await MongoMemoryServer.create({binary:{version:'7.0.14'},instance:{args:['--nounixsocket','--setParameter','diagnosticDataCollectionEnabled=false']}});await mongoose.connect(db.getUri());
     await Promise.all(models.map(Model=>Model.init()));
     return {mode:'temporary MongoDB',reset:()=>Promise.all(models.map(Model=>Model.deleteMany({}))),close:async()=>{await mongoose.disconnect();await db.stop();}};
   }
   const memory=fixture();return {mode:'native collection fixture',reset:memory.reset,stores:memory.stores,close:async()=>{}};
 };
 module.exports={createDatabase,models};
+

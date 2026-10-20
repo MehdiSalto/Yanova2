@@ -5,6 +5,7 @@ import AdminLayout from './layouts/AdminLayout';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminProductsPage from './pages/AdminProductsPage';
+import AdminProductAnalyticsPage from './pages/AdminProductAnalyticsPage';
 import AdminOffersPage from './pages/AdminOffersPage';
 import AdminBannersPage from './pages/AdminBannersPage';
 import AdminContactsPage from './pages/AdminContactsPage';
@@ -46,6 +47,7 @@ const App = () => {
             >
               <Route index element={<AdminDashboardPage />} />
               <Route path="products" element={<AdminProductsPage />} />
+              <Route path="products/:productId/analytics" element={<AdminProductAnalyticsPage />} />
               <Route path="offers" element={<AdminOffersPage />} />
               <Route path="banners" element={<AdminBannersPage />} />
               <Route path="contacts" element={<AdminContactsPage />} />
