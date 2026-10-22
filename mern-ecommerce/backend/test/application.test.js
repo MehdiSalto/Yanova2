@@ -91,6 +91,7 @@ describe('YANOBEN contracts and security',()=>{
     const data=(await request('/api/settings',{store:{}})).body;assert.equal(data.aboutUs.companyStory,'Real company story');assert.equal(data.policies.shippingPolicy,'Shipping test');assert.equal(data.siteInfo.siteName,'Test Shop');
     const Settings=require('../models/Settings');
     await Settings.updateOne({},{$set:{'siteInfo.siteName':'YANOVA','aboutUs.companyStory':'Welcome to Yanova.','siteInfo.supportEmail':'saved@example.invalid'}});
+    require('../utils/publicCache').invalidatePublic('settings');
     const renamed=(await request('/api/settings',{store:{}})).body;
     assert.equal(renamed.siteInfo.siteName,'YANOBEN');assert.equal(renamed.aboutUs.companyStory,'Welcome to YANOBEN.');assert.equal(renamed.siteInfo.supportEmail,'saved@example.invalid');
   });
@@ -122,6 +123,20 @@ describe('YANOBEN contracts and security',()=>{
     assert.equal((await request('/api/products',{headers:{Origin:'https://blocked.example'}})).status,403);
     const original=Product.collection.find;Product.collection.find=()=>{throw new Error('Simulated storage failure with sensitive details');};
     try{const result=await request('/api/products');assert.equal(result.status,500);assert(!JSON.stringify(result.body).includes('sensitive details'));}finally{Product.collection.find=original;}
+  });
+  it('records country presence over WebSocket without an HTTP heartbeat and throttles repeats', async()=>{
+    const visitor=socketClient(url,{autoConnect:false,transports:['websocket'],auth:{role:'visitor',sessionId:'w'.repeat(32)},extraHeaders:{origin:'http://localhost:3000','x-yanoben-country':'MA'}});
+    try {
+      await new Promise((resolve,reject)=>{visitor.once('connect',resolve);visitor.once('connect_error',reject);visitor.connect();});
+      const ping=data=>new Promise((resolve,reject)=>visitor.timeout(3000).emit('visitor:presence',data,(error,response)=>error?reject(error):resolve(response)));
+      const payload={visitorId:'q'.repeat(32),device:'mobile',path:'/products'};
+      assert.equal((await ping(payload)).ok,true);
+      const Model=require('../models/VisitorSession');const first=await Model.findOne({visitorId:payload.visitorId});
+      assert.equal(first.country,'MA');assert.equal(first.path,'/products');
+      assert.equal((await ping({...payload,path:'/offers'})).ok,true);
+      assert.equal((await Model.findOne({visitorId:payload.visitorId})).lastSeen.getTime(),first.lastSeen.getTime());
+      assert.equal((await ping({...payload,path:'//invalid'})).ok,false);
+    } finally {visitor.disconnect();}
   });
   it('authenticates admin sockets and keeps analytics events private',async()=>{
     const once=(socket,event)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Socket timeout: '+event)),3000);socket.once(event,value=>{clearTimeout(timer);resolve(value);});});

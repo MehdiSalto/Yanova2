@@ -2,6 +2,42 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequest } from './proxy.mjs';
 
+const mockCache = context => {
+  const entries = new Map();
+  const previous = globalThis.caches;
+  globalThis.caches = { default: { match: async request => entries.get(request.url)?.clone(), put: async (request, response) => { entries.set(request.url, response.clone()); } } };
+  context.after(() => { if (previous) globalThis.caches = previous; else delete globalThis.caches; });
+  return entries;
+};
+test('caches only anonymous public JSON and keeps distinct queries isolated', async context => {
+  const entries = mockCache(context); let upstream = 0;
+  context.mock.method(globalThis, 'fetch', async () => {
+    upstream++;
+    return Response.json({ items: [upstream] }, { headers: { 'Cache-Control': 'public, max-age=0, s-maxage=60', 'Access-Control-Allow-Origin': 'https://shop.pages.dev', Vary: 'Origin' } });
+  });
+  const read = (query, headers) => onRequest({ request: new Request(`https://shop.pages.dev/api/products?${query}`, { headers }), env: { BACKEND_URL: 'https://api.example.invalid' } });
+  assert.equal((await read('page=1&limit=12')).headers.get('X-Edge-Cache'), 'MISS');
+  const hit = await read('limit=12&page=1'); assert.equal(hit.headers.get('X-Edge-Cache'), 'HIT');
+  assert.equal(upstream, 1); assert.equal(hit.headers.get('Cache-Control'), 'no-store'); assert(!hit.headers.has('Access-Control-Allow-Origin'));
+  await read('page=2&limit=12'); assert.equal(upstream, 2); assert.equal(entries.size, 2);
+  await read('page=1&limit=12', { Cookie: 'accessToken=private' });
+  await read('page=1&limit=12', { Authorization: 'Bearer private' });
+  assert.equal(upstream, 4); assert.equal(entries.size, 2);
+});
+test('never caches management, auth, cookies, errors, or unmarked JSON', async context => {
+  const entries = mockCache(context);
+  for (const route of ['/api/products/manage','/api/auth/me','/api/csrf-token','/api/dashboard/analytics']) {
+    context.mock.method(globalThis, 'fetch', async () => Response.json({ private: true }, { headers: { 'Cache-Control': 'public, s-maxage=60' } }));
+    const response = await onRequest({ request: new Request(`https://shop.pages.dev${route}`), env: { BACKEND_URL: 'https://api.example.invalid' } });
+    assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
+  }
+  for (const [status, headers] of [[200, { 'Set-Cookie': 'private=1', 'Cache-Control': 'public, s-maxage=60' }], [500, { 'Cache-Control': 'public, s-maxage=60' }], [200, {}]]) {
+    context.mock.method(globalThis, 'fetch', async () => Response.json({}, { status, headers }));
+    await onRequest({ request: new Request('https://shop.pages.dev/api/products'), env: { BACKEND_URL: 'https://api.example.invalid' } });
+  }
+  assert.equal(entries.size, 0);
+});
+
 test('unconnected API returns uncached JSON rather than the SPA shell', async () => {
   const result = await onRequest({ request: new Request('https://shop.pages.dev/api/products'), env: {} });
   assert.equal(result.status, 503);

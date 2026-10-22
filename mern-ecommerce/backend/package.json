@@ -7,7 +7,9 @@
     "dev": "node --watch server.js",
     "start": "node server.js",
     "test": "node --test --test-concurrency=1 test/*.test.js",
-    "test:integration": "node test/run-integration.cjs"
+    "test:integration": "node test/run-integration.cjs",
+    "images:check": "node scripts/migrate-images.cjs",
+    "images:migrate": "node scripts/migrate-images.cjs --apply"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

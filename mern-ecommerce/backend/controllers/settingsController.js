@@ -1,3 +1,4 @@
+const { sendPublic, invalidatePublic } = require('../utils/publicCache');
 const Settings = require('../models/Settings');
 const { pick } = require('../utils/pagination');
 const document = async () => {
@@ -10,11 +11,11 @@ const document = async () => {
   if (settings.isModified()) await settings.save();
   return settings;
 };
-const getSettings = async (req, res) => { res.json(await document()); };
+const getSettings = async (req, res) => { return sendPublic(req, res, 'settings', document); };
 const updateSection = (section, fields) => async (req, res) => {
   const settings = await document();
   for (const [key, value] of Object.entries(pick(req.body[section], fields))) settings.set(`${section}.${key}`, value);
-  await settings.save(); res.json(settings);
+  await settings.save(); invalidatePublic('settings', req); res.json(settings);
 };
 const updateAbout = updateSection('aboutUs', ['companyStory','mission','vision','contactInfo']);
 const updatePolicies = updateSection('policies', ['privacyPolicy','refundPolicy','shippingPolicy','termsConditions']);

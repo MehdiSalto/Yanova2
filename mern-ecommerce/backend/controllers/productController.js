@@ -1,3 +1,4 @@
+const { sendPublic, invalidatePublic } = require('../utils/publicCache');
 const Product = require('../models/Product');
 const Click = require('../models/Click');
 const { list, search, pick } = require('../utils/pagination');
@@ -12,26 +13,31 @@ const getProducts = async (req, res) => {
   if (typeof req.query.category === 'string' && req.query.category) filter.category = req.query.category.slice(0,80);
   if (req.management && ['draft','published'].includes(req.query.status)) filter.status = req.query.status;
   if (req.query.featured === 'true') filter.featured = true;
-  res.json(await list(Product, filter, req.query));
+  return sendPublic(req, res, 'products', () => list(Product, filter, req.query));
 };
 const getProduct = async (req, res) => {
-  const product = await Product.findOne({ _id: req.params.id, ...(!req.management ? { status: 'published' } : {}) });
-  if (!product) throw httpError(404, 'Product not found.');
-  res.json(product);
+  return sendPublic(req, res, 'products', async () => {
+    const product = await Product.findOne({ _id: req.params.id, ...(!req.management ? { status: 'published' } : {}) });
+    if (!product) throw httpError(404, 'Product not found.');
+    return product;
+  });
 };
 const createProduct = async (req, res) => {
   const product = await Product.create(pick(req.body, fields));
+  invalidatePublic('products', req);
   notifyAdmins(req, 'analytics:update', { type: 'catalog' });
   res.status(201).json(product);
 };
 const updateProduct = async (req, res) => {
   const product = await Product.findByIdAndUpdate(req.params.id, { $set: pick(req.body, fields) }, { new: true, runValidators: true });
   if (!product) throw httpError(404, 'Product not found.');
+  invalidatePublic('products', req);
   notifyAdmins(req, 'analytics:update', { type: 'catalog' });
   res.json(product);
 };
 const deleteProduct = async (req, res) => {
   if (!await Product.findByIdAndDelete(req.params.id)) throw httpError(404, 'Product not found.');
+  invalidatePublic('products', req);
   notifyAdmins(req, 'analytics:update', { type: 'catalog' }); res.json({ message: 'Product deleted.' });
 };
 const registerClick = async (req, res) => {

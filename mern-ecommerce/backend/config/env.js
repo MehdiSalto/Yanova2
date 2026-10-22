@@ -1,6 +1,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const validateEnvironment = () => {
+  require('../services/imageStorage').cloudinaryConfig();
   if (!process.env.MONGO_URI) throw new Error('MONGO_URI is required. Run npm run setup and configure backend/.env.');
   const secret = process.env.JWT_ACCESS_SECRET || '';
   if (secret.length < 32 || /changeme|replace|example/i.test(secret)) {

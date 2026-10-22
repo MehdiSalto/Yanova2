@@ -180,3 +180,5 @@ files, and development servers should stay local. See `IMPLEMENTATION.md`.
 The archive excludes private `.env`, credentials, dependencies and Git history.
 Old exposed credentials were not revoked remotely. Rotate database credentials
 and any shared account password in their owning systems before reusing them.
+
+See [PERFORMANCE.md](PERFORMANCE.md) for Cloudinary setup, safe image migration, public cache rules, analytics batching and local k6 results.

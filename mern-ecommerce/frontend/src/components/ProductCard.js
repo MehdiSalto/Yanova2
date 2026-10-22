@@ -1,6 +1,7 @@
+import StoreImage from './StoreImage';
 import { motion } from 'framer-motion';
 import { FiExternalLink, FiShoppingCart } from 'react-icons/fi';
-import { productAPI, mediaUrl } from '../services/api';
+import { productAPI } from '../services/api';
 import useProductView from '../hooks/useProductView';
 
 const getDevice = () => {
@@ -31,11 +32,12 @@ const ProductCard = ({ product }) => {
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       <div className="product-visual relative aspect-square overflow-hidden bg-surface-muted">
-        <img
-          src={mediaUrl(product.imageUrl)}
+        <StoreImage
+          src={product.imageUrl}
+          width="640" height="640"
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          loading="lazy"
+
         />
         {product.discount > 0 && (
           <div className="absolute top-3 left-3">

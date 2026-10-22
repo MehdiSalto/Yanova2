@@ -1,3 +1,4 @@
+const { sendPublic, invalidatePublic } = require('../utils/publicCache');
 const Offer = require('../models/Offer');
 const Click = require('../models/Click');
 const { list, search, pick } = require('../utils/pagination');
@@ -12,14 +13,14 @@ const getOffers = async (req, res) => {
   if (Number.isFinite(minimum) && minimum >= 0 && minimum <= 100) filter.discountPercentage = { $gte: minimum };
   if (term) filter.$or = [{ title: term }, { description: term }];
   if (req.management && ['draft','published'].includes(req.query.status)) filter.status = req.query.status;
-  res.json(await list(Offer, filter, req.query));
+  return sendPublic(req, res, 'offers', () => list(Offer, filter, req.query), 10);
 };
-const createOffer = async (req, res) => { const offer = await Offer.create(pick(req.body, fields)); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.status(201).json(offer); };
+const createOffer = async (req, res) => { const offer = await Offer.create(pick(req.body, fields)); invalidatePublic('offers', req); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.status(201).json(offer); };
 const updateOffer = async (req, res) => {
   const offer = await Offer.findByIdAndUpdate(req.params.id, { $set: pick(req.body, fields) }, { new: true, runValidators: true });
-  if (!offer) throw httpError(404, 'Offer not found.'); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.json(offer);
+  if (!offer) throw httpError(404, 'Offer not found.'); invalidatePublic('offers', req); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.json(offer);
 };
-const deleteOffer = async (req, res) => { if (!await Offer.findByIdAndDelete(req.params.id)) throw httpError(404, 'Offer not found.'); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.json({ message: 'Offer deleted.' }); };
+const deleteOffer = async (req, res) => { if (!await Offer.findByIdAndDelete(req.params.id)) throw httpError(404, 'Offer not found.'); invalidatePublic('offers', req); notifyAdmins(req, 'analytics:update', { type: 'offers' }); res.json({ message: 'Offer deleted.' }); };
 const registerClick = async (req, res) => {
   if (!shouldTrack(req)) return res.status(204).end();
   const offer = await Offer.findOne({ _id: req.params.id, ...publicFilter() });

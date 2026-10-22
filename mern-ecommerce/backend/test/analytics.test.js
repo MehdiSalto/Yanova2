@@ -67,6 +67,22 @@ describe('Visitor and product analytics with isolated MongoDB', { skip: process.
     assert.equal(await Click.countDocuments({ type: 'product_view' }), 1);
     assert.equal((await Product.findById(published._id)).clickCount, 1);
   });
+  it('batches published product impressions, deduplicates mixed retries, and validates bounds', async () => {
+    const p = await product(); const draft = await product('Private draft', 'draft');
+    const first = tracking(), second = tracking();
+    const post = (events, extra = {}) => request('/api/clicks/views', { method: 'POST', jar: {}, country: 'MA', data: { ...tracking(), events }, ...extra });
+    const events = [{ productId: String(p._id), eventId: first.eventId }, { productId: String(draft._id), eventId: tracking().eventId }];
+    assert.equal((await post(events)).status, 201);
+    assert.equal((await post([...events, { productId: String(p._id), eventId: second.eventId }])).status, 201);
+    assert.equal(await Click.countDocuments({ type: 'product_view' }), 2);
+    assert.equal(await Click.countDocuments({ refId: draft._id }), 0);
+    assert.equal(await Click.countDocuments({ country: 'MA' }), 2);
+    assert.equal((await post(Array.from({ length: 26 }, () => events[0]))).status, 400);
+    assert.equal((await post([{ productId: 'invalid', eventId: first.eventId }])).status, 400);
+    assert.equal((await post(events, { csrf: false })).status, 403);
+    assert.equal((await post(events, { jar: adminJar })).status, 204);
+    assert.equal((await post(events, { userAgent: 'Googlebot' })).status, 204);
+  });
   it('calculates unique visitors, latest-country attribution, percentages and filtered product views', async () => {
     const p = await product(); const other = await product('Zero traffic product');
     const event = async (type, visitor, country, age = 0, refId = null) => Click.create({ ...tracking(visitor), type, country, ...(refId ? { refId } : {}), createdAt: new Date(Date.now() - age) });

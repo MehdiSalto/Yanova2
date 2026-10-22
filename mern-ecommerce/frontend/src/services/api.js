@@ -1,3 +1,5 @@
+import { enqueueView } from './viewQueue';
+import { publicGet } from './publicCatalog';
 import { trackingInfo } from './tracking';
 import axios from 'axios';
 const API_ROOT = (process.env.REACT_APP_API_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
@@ -24,23 +26,35 @@ api.interceptors.response.use(response => response, async (error) => {
   return Promise.reject(error);
 });
 export const mediaUrl = value => value?.startsWith('/uploads/') ? `${API_ROOT}${value}` : value;
+const sendViews = async (events, retry = true) => {
+  const csrf = await fetchCsrfToken();
+  const response = await fetch(`${API_ROOT}/api/clicks/views`, {
+    method: 'POST', credentials: 'include', keepalive: true,
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify({ ...trackingInfo(), events }),
+  });
+  if (!response.ok) {
+    const data = await response.json();
+    if (retry && data.code === 'INVALID_CSRF') { clearCsrfToken(); return sendViews(events, false); }
+    throw new Error(data.message || 'Unable to record views.');
+  }
+};
 export const productAPI = {
-  getAll: (params, config = {}) => api.get('/products', { ...config, params }), getOne: id => api.get(`/products/${id}`),
+  getAll: (params, config = {}) => publicGet('/products', params, config), getOne: id => publicGet(`/products/${id}`),
   click: (id, device) => api.post(`/products/${id}/click`, { ...trackingInfo(), device }),
-  view: (id, eventId) => api.post(`/products/${id}/view`, { ...trackingInfo(), eventId }),
+  view: (id, eventId) => enqueueView(id, eventId, sendViews),
 };
 export const offerAPI = {
-  getAll: (params, config = {}) => api.get('/offers', { ...config, params }),
+  getAll: (params, config = {}) => publicGet('/offers', params, config, 10000),
   click: id => api.post(`/offers/${id}/click`, trackingInfo()),
 };
-export const bannerAPI = { getAll: config => api.get('/banners', { ...config, params: { limit: 100 } }) };
+export const bannerAPI = { getAll: config => publicGet('/banners', { limit: 100 }, config) };
 export const contactAPI = { submit: data => api.post('/contacts', data) };
 export const sponsorshipAPI = {
   getForm: config => api.get('/sponsorships/form', config),
   submit: data => api.post('/sponsorships', data),
 };
 export const settingsAPI = {
-  get: config => api.get('/settings', config), updateAbout: data => api.put('/settings/about', data), updatePolicies: data => api.put('/settings/policies', data),
+  get: config => publicGet('/settings', {}, config), updateAbout: data => api.put('/settings/about', data), updatePolicies: data => api.put('/settings/policies', data),
 };
 export const clickAPI = {
   registerVisit: (device, path, eventId) => api.post('/clicks/visit', { ...trackingInfo(), device, path, eventId }),
