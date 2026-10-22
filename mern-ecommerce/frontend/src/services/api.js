@@ -26,12 +26,22 @@ api.interceptors.response.use(response => response, async (error) => {
   return Promise.reject(error);
 });
 export const mediaUrl = value => value?.startsWith('/uploads/') ? `${API_ROOT}${value}` : value;
+const sendLegacyViews = async events => {
+  // Keep rolling deployments compatible while an older API is still serving.
+  for (let start = 0; start < events.length; start += 5) {
+    await Promise.all(events.slice(start, start + 5).map(({ productId, eventId }) =>
+      api.post(`/products/${productId}/view`, { ...trackingInfo(), eventId }).catch(error => { if (error.response?.status !== 404) throw error; })));
+  }
+};
+let legacyViews = false;
 const sendViews = async (events, retry = true) => {
+  if (legacyViews) return sendLegacyViews(events);
   const csrf = await fetchCsrfToken();
   const response = await fetch(`${API_ROOT}/api/clicks/views`, {
     method: 'POST', credentials: 'include', keepalive: true,
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify({ ...trackingInfo(), events }),
   });
+  if ([404,405].includes(response.status)) { legacyViews = true; return sendLegacyViews(events); }
   if (!response.ok) {
     const data = await response.json();
     if (retry && data.code === 'INVALID_CSRF') { clearCsrfToken(); return sendViews(events, false); }

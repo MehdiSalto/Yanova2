@@ -67,7 +67,8 @@ snapshot with permanently stale products has been enabled.
 ## Analytics
 
 Visible product impressions are deduplicated per navigation and batched (up to
-25 per request) using keepalive fetch. The server validates the entire batch,
+25 per request) using keepalive fetch. During rolling deployment, an older API
+without the batch route uses the existing per-product route in groups of five. The server validates the entire batch,
 checks published product IDs once and uses unordered inserts so mixed retries
 keep new events and ignore duplicate IDs. Signed CSRF and existing admin/bot
 exclusion still apply. Outbound clicks retain immediate recording.
