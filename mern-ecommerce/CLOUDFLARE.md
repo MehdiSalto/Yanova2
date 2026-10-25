@@ -20,7 +20,12 @@ The table below also records settings for a future Git connection.
 
 Leave `REACT_APP_API_URL`, `REACT_APP_SOCKET_URL` and `VITE_API_URL` empty for
 the same-origin proxy. Admin login on its independent origin is `/login`.
-The default Vite base remains `/admin/` for integrated Node hosting.
+The default Vite base is `/` for independent hosting. The root integrated build
+explicitly sets `/admin/` when it builds the admin bundle for Node hosting.
+For a manual integrated admin build, set `VITE_BASE_PATH=/admin/`.
+Before uploading, verify every script and stylesheet referenced by `dist/index.html`
+exists at its corresponding public path; a successful build alone does not prove
+that the bundle will load on a separately hosted origin.
 
 Pages Functions route only `/api`, `/uploads` and `/socket.io` to Express.
 Until `BACKEND_URL` is configured, these paths return JSON 503 instead of SPA
