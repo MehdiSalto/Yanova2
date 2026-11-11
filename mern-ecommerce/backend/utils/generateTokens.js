@@ -1,10 +1,17 @@
 const jwt = require('jsonwebtoken');
-const cookieOptions = () => ({
-  httpOnly: true,
-  secure: process.env.COOKIE_SECURE === 'true',
-  sameSite: process.env.COOKIE_SAME_SITE || 'lax',
-  path: '/',
-});
+const cookieOptions = () => {
+  const production = process.env.NODE_ENV === 'production';
+  const sameSite = String(process.env.COOKIE_SAME_SITE || (production ? 'none' : 'lax')).toLowerCase();
+  if (!['lax', 'strict', 'none'].includes(sameSite)) {
+    throw new Error('Invalid COOKIE_SAME_SITE. Use lax, strict, or none.');
+  }
+  return {
+    httpOnly: true,
+    secure: process.env.COOKIE_SECURE === 'true' || production || sameSite === 'none',
+    sameSite,
+    path: '/',
+  };
+};
 const generateAccessToken = (admin) => jwt.sign(
   { id: String(admin._id), role: admin.role, sv: admin.sessionVersion || 0 }, process.env.JWT_ACCESS_SECRET,
   { algorithm: 'HS256', expiresIn: process.env.JWT_ACCESS_EXPIRES || '8h' }
