@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
+const isProduction = () => process.env.NODE_ENV === 'production'
+  || Boolean(process.env.RAILWAY_ENVIRONMENT_NAME || process.env.RAILWAY_PROJECT_ID);
 const cookieOptions = () => {
-  const production = process.env.NODE_ENV === 'production';
-  // The production client and API use different sites (Cloudflare Pages and Railway).
-  // Cross-site cookies require SameSite=None and Secure.
+  const production = isProduction();
+  // Cloudflare Pages and Railway are cross-site in production.
   const sameSite = production
     ? 'none'
     : String(process.env.COOKIE_SAME_SITE || 'lax').toLowerCase();
@@ -11,7 +12,7 @@ const cookieOptions = () => {
   }
   return {
     httpOnly: true,
-    secure: process.env.COOKIE_SECURE === 'true' || production || sameSite === 'none',
+    secure: production || process.env.COOKIE_SECURE === 'true' || sameSite === 'none',
     sameSite,
     path: '/',
   };
