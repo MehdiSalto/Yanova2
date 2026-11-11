@@ -26,64 +26,57 @@ const ProductCard = ({ product }) => {
   return (
     <motion.article
       ref={viewRef}
-      className="group glass card-hover rounded-2xl overflow-hidden"
-      initial={{ opacity: 0, y: 20 }}
+      className="group glass card-hover flex h-full min-w-0 flex-col overflow-hidden rounded-xl"
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
     >
-      <div className="product-visual relative aspect-square overflow-hidden bg-surface-muted">
+      <div className="product-visual relative aspect-square shrink-0 overflow-hidden bg-surface-muted">
         <StoreImage
           src={product.imageUrl}
-          width="640" height="640"
+          width="640"
+          height="640"
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-
+          className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105"
         />
         {product.discount > 0 && (
-          <div className="absolute top-3 left-3">
-            <span className="bg-gold-500 text-black text-xs font-bold px-2 py-1 rounded-full">
-              -{product.discount}%
-            </span>
-          </div>
+          <span className="absolute left-1.5 top-1.5 rounded-full bg-gold-500 px-1.5 py-0.5 text-[9px] font-bold leading-tight text-black sm:left-2 sm:top-2 sm:px-2 sm:text-[10px]">
+            -{product.discount}%
+          </span>
         )}
         {product.featured && (
-          <div className="absolute top-3 right-3">
-            <span className="bg-black text-white text-xs font-bold px-2 py-1 rounded-full">
-              Featured
-            </span>
-          </div>
+          <span className="absolute right-1.5 top-1.5 rounded-full bg-black px-1.5 py-0.5 text-[9px] font-bold leading-tight text-white sm:right-2 sm:top-2 sm:px-2 sm:text-[10px]">
+            Featured
+          </span>
         )}
       </div>
 
-      <div className="p-5">
-        <h3 className="font-bold text-lg text-ink mb-2 line-clamp-1">{product.name}</h3>
-        <p className="text-muted text-sm mb-4 line-clamp-2">{product.description}</p>
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            {discountPrice ? (
-              <>
-                <span className="text-2xl font-black text-ink">${discountPrice}</span>
-                <span className="text-gray-400 line-through text-base">${product.price.toFixed(2)}</span>
-              </>
-            ) : (
-              <span className="text-2xl font-black text-ink">${product.price.toFixed(2)}</span>
-            )}
-          </div>
-          <button
-            onClick={handleBuy}
-            className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5"
-            aria-label={`Buy ${product.name}`}
-          >
-            <FiShoppingCart className="w-4 h-4" />
-            <span>Buy Now</span>
-            <FiExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
+      <div className="flex min-w-0 flex-1 flex-col p-2 sm:p-2.5">
+        <h3 className="mb-2 min-h-[2.5em] break-words text-xs font-semibold leading-snug text-ink line-clamp-2 sm:text-sm">
+          {product.name}
+        </h3>
+        <div className="mt-auto flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 pb-2">
+          {discountPrice ? (
+            <>
+              <span className="text-sm font-black leading-tight text-ink sm:text-base">${discountPrice}</span>
+              <span className="text-[10px] leading-tight text-gray-400 line-through sm:text-xs">${Number(product.price).toFixed(2)}</span>
+            </>
+          ) : (
+            <span className="text-sm font-black leading-tight text-ink sm:text-base">${Number(product.price).toFixed(2)}</span>
+          )}
         </div>
+        <button
+          onClick={handleBuy}
+          className="flex min-h-8 w-full items-center justify-center gap-1 rounded-md bg-gold-500 px-1.5 py-1.5 text-[10px] font-bold leading-tight text-black transition-colors hover:bg-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-1 sm:min-h-9 sm:gap-1.5 sm:text-xs"
+          aria-label={'Buy ' + product.name}
+        >
+          <FiShoppingCart className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" />
+          <span>Buy Now</span>
+          <FiExternalLink className="hidden h-3 w-3 shrink-0 sm:block" />
+        </button>
       </div>
     </motion.article>
   );
 };
 
 export default ProductCard;
-

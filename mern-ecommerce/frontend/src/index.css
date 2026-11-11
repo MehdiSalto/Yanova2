@@ -188,3 +188,31 @@ body {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Compact catalog grid: 3 columns on small phones, up to 8 on wide desktop. */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  align-items: stretch;
+}
+
+@media (min-width: 480px) {
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+}
+
+@media (min-width: 768px) {
+  .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.85rem; }
+}
+
+@media (min-width: 1024px) {
+  .product-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem; }
+}
+
+@media (min-width: 1280px) {
+  .product-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1rem; }
+}
+
+@media (min-width: 1536px) {
+  .product-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 1rem; }
+}
