@@ -1,0 +1,46 @@
+name: Repair frontend lockfile
+
+on:
+  push:
+    branches:
+      - fix/cloudflare-frontend-lockfile
+    paths:
+      - ".github/workflows/repair-frontend-lock.yml"
+      - "mern-ecommerce/frontend/package.json"
+      - "mern-ecommerce/frontend/package-lock.json"
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/cloudflare-frontend-lockfile
+      - name: Set up Node.js and npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.16.0"
+      - name: Regenerate frontend lockfile
+        working-directory: mern-ecommerce/frontend
+        run: npm install --package-lock-only --ignore-scripts
+      - name: Verify clean install
+        working-directory: mern-ecommerce/frontend
+        run: npm ci
+      - name: Verify production build
+        working-directory: mern-ecommerce/frontend
+        run: npm run build
+      - name: Commit corrected lockfile
+        run: |
+          if git diff --quiet -- mern-ecommerce/frontend/package-lock.json; then
+            echo "Lockfile is already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mern-ecommerce/frontend/package-lock.json
+          git commit -m "fix(frontend): synchronize npm lockfile"
+          git push origin HEAD:fix/cloudflare-frontend-lockfile
