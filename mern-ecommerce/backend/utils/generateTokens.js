@@ -1,7 +1,11 @@
 const jwt = require('jsonwebtoken');
 const cookieOptions = () => {
   const production = process.env.NODE_ENV === 'production';
-  const sameSite = String(process.env.COOKIE_SAME_SITE || (production ? 'none' : 'lax')).toLowerCase();
+  // The production client and API use different sites (Cloudflare Pages and Railway).
+  // Cross-site cookies require SameSite=None and Secure.
+  const sameSite = production
+    ? 'none'
+    : String(process.env.COOKIE_SAME_SITE || 'lax').toLowerCase();
   if (!['lax', 'strict', 'none'].includes(sameSite)) {
     throw new Error('Invalid COOKIE_SAME_SITE. Use lax, strict, or none.');
   }
